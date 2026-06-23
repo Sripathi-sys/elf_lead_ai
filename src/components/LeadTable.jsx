@@ -420,7 +420,7 @@ export default function LeadTable({
         {isAddModalOpen && (
           <div className="modal-overlay" onClick={() => setIsAddModalOpen(false)}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <div style={{ display: 'flex', justifyBetween: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <h2 style={{ fontSize: '1.25rem', fontWeight: '800' }}>Add Business Manually</h2>
                 <button onClick={() => setIsAddModalOpen(false)} className="btn btn-secondary btn-icon" style={{ borderRadius: '50%' }}>
                   <X size={16} />
@@ -553,7 +553,7 @@ export default function LeadTable({
         {isImportModalOpen && (
           <div className="modal-overlay" onClick={() => setIsImportModalOpen(false)}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <div style={{ display: 'flex', justifyBetween: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <h2 style={{ fontSize: '1.25rem', fontWeight: '800' }}>Import Businesses</h2>
                 <button onClick={() => setIsImportModalOpen(false)} className="btn btn-secondary btn-icon" style={{ borderRadius: '50%' }}>
                   <X size={16} />
