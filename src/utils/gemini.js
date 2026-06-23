@@ -138,27 +138,35 @@ Target Location Context: Chennai / Tamil Nadu, India. Ensure all retrieved socia
 
 Use Google Search grounding to find real-world business details. Do NOT guess, hallucinate, or make up URLs, social media links, or contact numbers.
 
-Verification Rules & Pipeline:
-1. Chronological Lookup Order:
-   - Step A: Find the business's official Instagram profile page link first.
-   - Step B: Look directly in that Instagram profile bio for the website link (URL).
-   - Step C: Extract and save that specific website URL as the official website link.
-   - Step D: Search for and open that website to extract the active WhatsApp and mobile contact numbers.
-2. Contact Number Extraction: Prioritize phone numbers found on the website linked in the Instagram bio. If none exist there, pull them from the Instagram bio itself. Format as "WhatsApp: [number] / Mobile: [number]". If no numbers exist on these pages, write "Not found".
-3. Logo & Branding Verification: Verify the profile logo on Facebook and Instagram matches the official business branding/logo from their website. If it does not match, write "no page".
-4. Business Location: Find the neighborhood or area where the business is located in Chennai/Tamil Nadu (e.g., "T. Nagar, Chennai").
+Verification Rules & Search Pipeline:
+1. Local Context: The business MUST be located in Tamil Nadu, India only (e.g. Chennai, Coimbatore, Madurai, Trichy, Salem). Do not return details of matching businesses from other Indian states (like Karnataka or Maharashtra) or other countries.
+2. Instagram Bio First:
+   - First, find the official Instagram profile.
+   - Look directly in their Instagram bio for the website link (URL), Facebook page link, and contact number.
+   - If the website URL is NOT found in the Instagram bio, then perform a browser search to find the official website.
+3. Contact Number Verification Pipeline:
+   - First, check the Instagram bio for a phone number.
+   - Second, check their official website for a phone number.
+   - Third, look at recent Instagram posts to find phone numbers.
+   - Fourth, cross-check: Compare the phone number found on the website and the numbers in the Instagram posts. Verify if they are similar or the same to confirm consistency. Format as "WhatsApp: [number] / Mobile: [number]". If no numbers can be found or verified, return "Not found".
+4. Facebook Page Verification:
+   - Check if the Facebook page link is present in the Instagram bio. If not, look up their Facebook page.
+   - Verify the profile logo on the Facebook page matches the official website and Instagram profile branding. If the branding/logo does not match, write "no page".
+5. Meta Ads Library Search:
+   - Use the Instagram username/handle to search the Meta Ads Library. Identify if there are active ads or pages associated with that handle, and label Meta Ads Status accordingly ("Active", "Have page but inactive ads or no ads", or "No page no ads").
+6. Business Location: Find the specific area, street, or neighborhood where the business operates in Tamil Nadu (e.g. "T. Nagar, Chennai" or "RS Puram, Coimbatore").
 
 Search criteria and definitions:
 1. Company Name: The official clean brand or business name (e.g. "HB Construction Chennai").
 2. WhatsApp and Mobile Number: Extract active contact numbers following the verification pipeline. Format as "WhatsApp: [number] / Mobile: [number]".
 3. Website Status: Must be precisely one of: "Active website", "Have website but inactive", or "No website". Define "Have website but inactive" if they have a domain but the site is down, under construction, or showing hosting errors.
-4. Website URL: The exact website URL found in the Instagram bio (e.g., "hbconstruction.com").
+4. Website URL: The exact website URL found in the Instagram bio (if present), otherwise from the browser search.
 5. Business Instagram Link: Find the real Instagram profile link. If none exists, write "no page".
 6. Business Facebook Page Link: Find the real Facebook page link. Make sure the branding matches. If not, write "no page".
 7. Meta Ads Status: Determine if they run ads on Meta Ads Library. Must be precisely one of: "Active", "Have page but inactive ads or no ads", or "No page no ads".
 8. Instagram Followers: Retrieve or closely estimate their actual follower count (e.g., "2.8k followers").
 9. Business Type / Category: The type of business (e.g., "Construction Company").
-10. Business Location: The specific area/locality of the business in Chennai or Tamil Nadu (e.g., "Anna Nagar, Chennai").
+10. Business Location: The specific area/locality of the business in Tamil Nadu (e.g., "Anna Nagar, Chennai").
 
 Return ONLY a valid JSON object matching this structure:
 {
