@@ -159,3 +159,40 @@ Make sure the JSON keys match these fields exactly:
     return localFallback;
   }
 }
+
+export async function generateOutreach(apiKey, lead, settings, config) {
+  const prompt = `Write a cold B2B outreach message for a company named "${lead.companyName}" based in ${lead.businessType || 'business'}.
+Our company is "${settings.companyName}" (${settings.companyDescription}). Our value proposition is: "${settings.valueProposition}".
+Write a ${config.type || 'Email'} message with a ${config.tone || 'Professional'} tone, ${config.length || 'Medium'} length.
+Keep the words simple, plain, and in simple English. Do not use jargon.`;
+
+  if (!apiKey) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return `Hi there,
+
+I noticed your profile for ${lead.companyName}. We help ${lead.businessType || 'businesses'} get more local customers and phone calls using Instagram Ads and WhatsApp tools.
+
+Would you be open to a quick chat to see how we can help you get more inquiries?
+
+Best regards,
+${settings.senderName}
+${settings.senderTitle}
+${settings.companyName}`;
+  }
+
+  try {
+    return await callGemini(apiKey, prompt, false);
+  } catch (err) {
+    console.warn("Outreach AI call failed, falling back to template:", err);
+    return `Hi,
+
+I came across ${lead.companyName}. We help local businesses set up WhatsApp chat tools, active websites, and run Meta ads.
+
+Would you be interested in getting more phone calls and customer inquiries?
+
+Best,
+${settings.senderName}
+${settings.companyName}`;
+  }
+}
+

@@ -412,9 +412,10 @@ export default function LeadTable({
                   Close Details
                 </button>
               </div>
-            </>
-          )}
-          </div>
+            </div>
+          </>
+        )}
+      </div>
 
         {/* Add Lead Modal - Simple English */}
         {isAddModalOpen && (
