@@ -1,183 +1,83 @@
 import React, { useState } from 'react';
-import { Sparkles, MapPin, Search, Plus, Check, Database, AlertCircle } from 'lucide-react';
-import { prospectLeads, scoreLead } from '../utils/gemini';
+import { Sparkles, Search, Check, Database, AlertCircle, Globe, Phone, ShieldCheck, Megaphone, Instagram, Facebook } from 'lucide-react';
+import { researchCompany } from '../utils/gemini';
 
-export default function Prospector({ settings, onAddLead, leads }) {
-  const [industry, setIndustry] = useState('');
-  const [location, setLocation] = useState('');
-  const [icp, setIcp] = useState('');
+export default function Prospector({ settings, onAddLead }) {
+  const [queryInput, setQueryInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState([]);
-  const [addedIds, setAddedIds] = useState(new Set());
-  const [scoringStatus, setScoringStatus] = useState({}); // tracking background AI scoring
+  const [result, setResult] = useState(null);
+  const [isAdded, setIsAdded] = useState(false);
 
-  const handleProspect = async (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
-    if (!industry || !location) return;
+    if (!queryInput.trim()) return;
 
     setLoading(true);
-    setResults([]);
-    setAddedIds(new Set());
+    setResult(null);
+    setIsAdded(false);
     
     try {
-      const generated = await prospectLeads(settings.apiKey, industry, location, icp);
-      // Give each lead a temporary ID for tracking
-      const mapped = generated.map((lead, idx) => ({
-        ...lead,
-        tempId: 'temp_' + Date.now() + '_' + idx
-      }));
-      setResults(mapped);
+      const data = await researchCompany(settings.apiKey, queryInput);
+      setResult(data);
     } catch (err) {
-      alert("Failed to generate prospects: " + err.message);
+      alert("Failed to find details: " + err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAddLead = async (prospect) => {
-    if (addedIds.has(prospect.tempId)) return;
-
-    // Set status to scoring
-    setScoringStatus(prev => ({ ...prev, [prospect.tempId]: 'scoring' }));
+  const handleSaveToExcel = () => {
+    if (!result || isAdded) return;
 
     const leadItem = {
-      companyName: prospect.companyName,
-      contactName: prospect.contactName,
-      email: prospect.email,
-      website: prospect.website || '',
-      description: prospect.description,
-      industry: prospect.industry,
-      location: prospect.location,
-      status: 'new',
-      source: 'AI Prospector',
+      ...result,
+      id: 'lead_researched_' + Date.now(),
       createdAt: new Date().toISOString()
     };
 
-    try {
-      // Score lead in background
-      const aiResponse = await scoreLead(settings.apiKey, leadItem, settings);
-      leadItem.aiScore = aiResponse;
-      setScoringStatus(prev => ({ ...prev, [prospect.tempId]: 'success' }));
-    } catch (err) {
-      console.warn("AI score enrichment failed during prospect importing.", err);
-      setScoringStatus(prev => ({ ...prev, [prospect.tempId]: 'failed' }));
-    }
-
     onAddLead(leadItem);
-    setAddedIds(prev => {
-      const next = new Set(prev);
-      next.add(prospect.tempId);
-      return next;
-    });
+    setIsAdded(true);
   };
-
-  const handleAddAll = async () => {
-    const unadded = results.filter(r => !addedIds.has(r.tempId));
-    if (unadded.length === 0) return;
-
-    // Process all sequentially or parallelly
-    await Promise.all(unadded.map(prospect => handleAddLead(prospect)));
-  };
-
-  // Quick industry suggestion chips
-  const suggestions = ['SaaS / Tech', 'Dental Clinics', 'Digital Agencies', 'E-commerce Brands', 'Real Estate Brokers'];
 
   return (
     <div className="prospector-view">
       <div className="header-container">
         <div className="header-title">
-          <h1>AI Lead Prospector</h1>
-          <p>Describe your target audience and location to generate real-time high-quality prospects using Gemini.</p>
+          <h1>Company Research Desk</h1>
+          <p>Search any company name or Instagram username to automatically collect their details for digital marketing.</p>
         </div>
       </div>
 
       <div className="prospector-container">
-        {/* Search Panel Card */}
-        <form onSubmit={handleProspect} className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '20px', height: 'fit-content' }}>
+        {/* Input Panel */}
+        <form onSubmit={handleSearch} className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '20px', height: 'fit-content' }}>
           <h2 style={{ fontSize: '1.1rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Search size={18} style={{ color: 'var(--accent-light)' }} />
-            Target Parameters
+            <Search size={18} style={{ color: 'var(--accent)' }} />
+            Search Business
           </h2>
 
           <div className="form-group" style={{ marginBottom: 0 }}>
-            <label className="form-label">Target Industry / Niche</label>
+            <label className="form-label">Company Name or Instagram Handle</label>
             <input
               type="text"
               required
-              value={industry}
-              onChange={(e) => setIndustry(e.target.value)}
-              placeholder="e.g. Dental Clinics, SaaS Startups"
+              value={queryInput}
+              onChange={(e) => setQueryInput(e.target.value)}
+              placeholder="e.g. HB Construction Chennai or @deepambridal"
               className="form-control"
             />
-            {/* Quick Chips */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
-              {suggestions.map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => setIndustry(s)}
-                  style={{
-                    fontSize: '0.72rem',
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid var(--border)',
-                    color: 'var(--text-secondary)',
-                    padding: '3px 8px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    transition: 'var(--transition)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.borderColor = 'var(--accent-light)';
-                    e.target.style.color = 'var(--text-primary)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.borderColor = 'var(--border)';
-                    e.target.style.color = 'var(--text-secondary)';
-                  }}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
           </div>
 
-          <div className="form-group" style={{ marginBottom: 0 }}>
-            <label className="form-label">Target Location</label>
-            <div style={{ position: 'relative' }}>
-              <input
-                type="text"
-                required
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="e.g. New York, London, Remote"
-                className="form-control"
-                style={{ paddingLeft: '44px' }}
-              />
-              <MapPin size={16} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-            </div>
-          </div>
-
-          <div className="form-group" style={{ marginBottom: 0 }}>
-            <label className="form-label">Ideal Customer Profile (ICP Notes)</label>
-            <textarea
-              value={icp}
-              onChange={(e) => setIcp(e.target.value)}
-              placeholder="e.g. Companies looking to modernize their web presence or streamline customer onboarding."
-              className="form-control"
-              rows={3}
-            />
-          </div>
-
-          <button type="submit" disabled={loading} className="btn btn-primary" style={{ marginTop: '8px' }}>
+          <button type="submit" disabled={loading} className="btn btn-primary">
             {loading ? (
               <>
                 <div className="spinner" style={{ width: '16px', height: '16px', marginRight: '8px' }} />
-                Scouting Prospects...
+                Researching...
               </>
             ) : (
               <>
                 <Sparkles size={16} />
-                Generate Leads with AI
+                Research Business
               </>
             )}
           </button>
@@ -185,100 +85,116 @@ export default function Prospector({ settings, onAddLead, leads }) {
 
         {/* Results Panel */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {results.length > 0 && (
-            <div className="glass-card" style={{ padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: '600' }}>
-                Found {results.length} Target Opportunities
-              </span>
-              <button 
-                onClick={handleAddAll} 
-                className="btn btn-secondary" 
-                style={{ display: 'flex', gap: '8px', alignItems: 'center' }}
-                disabled={results.every(r => addedIds.has(r.tempId))}
-              >
-                <Database size={14} />
-                Import All to CRM
-              </button>
-            </div>
-          )}
-
           {loading ? (
-            <div className="glass-card empty-state" style={{ height: '300px' }}>
+            <div className="glass-card empty-state" style={{ height: '340px' }}>
               <Sparkles size={40} className="pulse" style={{ color: 'var(--accent-light)' }} />
-              <h3>Consulting Gemini AI</h3>
+              <h3>Looking Up Details</h3>
               <p style={{ color: 'var(--text-secondary)', maxWidth: '380px', marginTop: '10px' }}>
-                Analyzing regional directories, identifying market pain points, and constructing prospect records...
+                Analyzing websites, finding contact numbers, checking Meta Ads Library, and verifying Instagram followers...
               </p>
             </div>
-          ) : results.length === 0 ? (
-            <div className="glass-card empty-state" style={{ height: '300px' }}>
-              <AlertCircle size={40} />
-              <h3>No Prospects Loaded</h3>
+          ) : !result ? (
+            <div className="glass-card empty-state" style={{ height: '340px' }}>
+              <Search size={40} />
+              <h3>Enter a Business to Start</h3>
               <p style={{ color: 'var(--text-secondary)' }}>
-                Configure target parameters and click search to view AI generated prospects.
+                Type a name or social profile handle on the left to collect information.
               </p>
             </div>
           ) : (
-            <div className="prospect-results">
-              {results.map((prospect) => {
-                const isAdded = addedIds.has(prospect.tempId);
-                const scoreStatus = scoringStatus[prospect.tempId];
+            <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+                <div>
+                  <h3 style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--text-primary)' }}>{result.companyName}</h3>
+                  <span className="badge badge-score-a" style={{ marginTop: '6px' }}>{result.businessType}</span>
+                </div>
+                <button
+                  onClick={handleSaveToExcel}
+                  className={`btn ${isAdded ? 'btn-secondary' : 'btn-primary'}`}
+                  style={isAdded ? { borderColor: 'var(--success)', color: 'var(--success)' } : {}}
+                  disabled={isAdded}
+                >
+                  {isAdded ? (
+                    <>
+                      <Check size={16} />
+                      Added to Excel
+                    </>
+                  ) : (
+                    <>
+                      <Database size={16} />
+                      Add to Excel Table
+                    </>
+                  )}
+                </button>
+              </div>
 
-                return (
-                  <div key={prospect.tempId} className="glass-card prospect-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '24px' }}>
-                    <div style={{ flexGrow: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                        <h3 style={{ fontSize: '1.2rem', fontWeight: '800' }}>{prospect.companyName}</h3>
-                        {prospect.website && (
-                          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                            {prospect.website}
-                          </span>
-                        )}
-                      </div>
-                      <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '16px' }}>
-                        {prospect.description}
-                      </p>
-                      
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                        <span><b>Contact:</b> {prospect.contactName} ({prospect.email})</span>
-                        <span><b>Location:</b> {prospect.location}</span>
-                      </div>
-                    </div>
+              <hr style={{ border: 'none', borderTop: '1px solid var(--border)' }} />
 
-                    <div style={{ flexShrink: 0 }}>
-                      {isAdded ? (
-                        <button 
-                          className="btn btn-secondary" 
-                          disabled 
-                          style={{ borderColor: 'var(--success)', color: 'var(--success)', minWidth: '130px', display: 'flex', gap: '6px', justifyContent: 'center' }}
-                        >
-                          <Check size={16} />
-                          {scoreStatus === 'scoring' ? 'Scoring...' : 'Added to CRM'}
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleAddLead(prospect)}
-                          disabled={scoreStatus === 'scoring'}
-                          className="btn btn-primary"
-                          style={{ minWidth: '130px', display: 'flex', gap: '6px', justifyContent: 'center' }}
-                        >
-                          {scoreStatus === 'scoring' ? (
-                            <>
-                              <div className="spinner" style={{ width: '14px', height: '14px', marginRight: '6px' }} />
-                              Scoring...
-                            </>
-                          ) : (
-                            <>
-                              <Plus size={16} />
-                              Add to CRM
-                            </>
-                          )}
-                        </button>
-                      )}
-                    </div>
+              {/* Grid of collected parameters */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                  <Phone size={18} style={{ color: 'var(--accent)', marginTop: '2px' }} />
+                  <div>
+                    <h4 style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-muted)' }}>Contact Numbers</h4>
+                    <p style={{ fontSize: '0.95rem', fontWeight: '600' }}>{result.contactNumber}</p>
                   </div>
-                );
-              })}
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                  <Globe size={18} style={{ color: 'var(--accent)', marginTop: '2px' }} />
+                  <div>
+                    <h4 style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-muted)' }}>Website Status</h4>
+                    <span className={`badge ${result.websiteStatus === 'Active website' ? 'badge-web-active' : result.websiteStatus === 'No website' ? 'badge-web-none' : 'badge-web-inactive'}`} style={{ margin: '4px 0 6px', fontSize: '0.7rem' }}>
+                      {result.websiteStatus}
+                    </span>
+                    {result.websiteUrl && (
+                      <p style={{ fontSize: '0.9rem' }}>
+                        URL: <a href={`https://${result.websiteUrl}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>{result.websiteUrl}</a>
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                  <Instagram size={18} style={{ color: 'var(--accent)', marginTop: '2px' }} />
+                  <div>
+                    <h4 style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-muted)' }}>Instagram Information</h4>
+                    <p style={{ fontSize: '0.9rem' }}>
+                      Profile: <a href={`https://${result.instagramLink}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: '600' }}>@{result.instagramLink.split('/').pop()}</a>
+                    </p>
+                    <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                      Followers: <b>{result.instagramFollowers}</b>
+                    </p>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                  <Facebook size={18} style={{ color: 'var(--accent)', marginTop: '2px' }} />
+                  <div>
+                    <h4 style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-muted)' }}>Facebook Page</h4>
+                    <p style={{ fontSize: '0.9rem' }}>
+                      {result.facebookLink === 'no page' ? (
+                        <span style={{ color: 'var(--text-secondary)' }}>no page</span>
+                      ) : (
+                        <a href={`https://${result.facebookLink}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: '600' }}>fb.com/{result.facebookLink.split('/').pop()}</a>
+                      )}
+                    </p>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', gridColumn: 'span 2' }}>
+                  <Megaphone size={18} style={{ color: 'var(--accent)', marginTop: '2px' }} />
+                  <div>
+                    <h4 style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-muted)' }}>Meta Ads Status (Meta Ads Library)</h4>
+                    <span className={`badge ${result.metaAdsStatus === 'Active' ? 'badge-ads-active' : result.metaAdsStatus === 'No page no ads' ? 'badge-web-none' : 'badge-ads-inactive'}`} style={{ marginTop: '4px', fontSize: '0.7rem' }}>
+                      {result.metaAdsStatus}
+                    </span>
+                    <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '6px' }}>
+                      Ads analyzed using Meta Ads Registry indexes.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>

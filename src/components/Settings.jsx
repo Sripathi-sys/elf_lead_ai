@@ -22,7 +22,7 @@ export default function Settings({ settings, onSaveSettings, onLoadDemoData, onC
       <div className="header-container">
         <div className="header-title">
           <h1>System Settings</h1>
-          <p>Configure your business profile, Gemini API access, and database settings.</p>
+          <p>Change your business details, Gemini AI setup, and manage your saved business data.</p>
         </div>
       </div>
 
@@ -31,7 +31,7 @@ export default function Settings({ settings, onSaveSettings, onLoadDemoData, onC
           <div>
             <h2 style={{ fontSize: '1.2rem', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
               <Shield size={20} className="pulse" style={{ color: 'var(--accent-light)' }} />
-              API Key Setup
+              Gemini AI Connection
               {import.meta.env.VITE_GEMINI_API_KEY && (
                 <span className="badge badge-score-a" style={{ fontSize: '0.65rem', padding: '2px 8px', textTransform: 'none', fontWeight: 'bold' }}>
                   ✓ Loaded from Vercel
@@ -40,7 +40,7 @@ export default function Settings({ settings, onSaveSettings, onLoadDemoData, onC
             </h2>
             <div className="form-group">
               <label className="form-label" htmlFor="apiKey">
-                Gemini API Key
+                Your API Key
               </label>
               <div style={{ position: 'relative' }}>
                 <input
@@ -49,7 +49,7 @@ export default function Settings({ settings, onSaveSettings, onLoadDemoData, onC
                   name="apiKey"
                   value={formData.apiKey}
                   onChange={handleChange}
-                  placeholder={import.meta.env.VITE_GEMINI_API_KEY ? "••••••••••••••••••••" : "AIzaSy..."}
+                  placeholder={import.meta.env.VITE_GEMINI_API_KEY ? "••••••••••••••••••••" : "Paste your key here (AIzaSy...)"}
                   className="form-control"
                   style={{ paddingLeft: '44px' }}
                 />
@@ -58,10 +58,10 @@ export default function Settings({ settings, onSaveSettings, onLoadDemoData, onC
               <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '8px' }}>
                 {import.meta.env.VITE_GEMINI_API_KEY ? (
                   <span style={{ color: 'var(--success)', fontWeight: '600' }}>
-                    ✓ Pre-configured via Vercel environment variables. You can enter a different key here to override it.
+                    ✓ Pre-configured via Vercel. You can type another key here to override it.
                   </span>
                 ) : (
-                  "Your API key is saved locally in your browser's localStorage. If left blank, a simulated local AI model will respond."
+                  "This key is saved in your browser. If you do not have a key, a built-in simulator will respond automatically."
                 )}
               </p>
             </div>
@@ -72,7 +72,7 @@ export default function Settings({ settings, onSaveSettings, onLoadDemoData, onC
           <div>
             <h2 style={{ fontSize: '1.2rem', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <User size={20} style={{ color: 'var(--accent-light)' }} />
-              Sender Profile
+              Your Profile
             </h2>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div className="form-group">
@@ -83,7 +83,7 @@ export default function Settings({ settings, onSaveSettings, onLoadDemoData, onC
                   name="senderName"
                   value={formData.senderName}
                   onChange={handleChange}
-                  placeholder="e.g. Alex Rivera"
+                  placeholder="e.g. Sanjay Kumar"
                   className="form-control"
                   required
                 />
@@ -96,7 +96,7 @@ export default function Settings({ settings, onSaveSettings, onLoadDemoData, onC
                   name="senderTitle"
                   value={formData.senderTitle}
                   onChange={handleChange}
-                  placeholder="e.g. Founder & CEO"
+                  placeholder="e.g. Marketing Manager"
                   className="form-control"
                   required
                 />
@@ -111,7 +111,7 @@ export default function Settings({ settings, onSaveSettings, onLoadDemoData, onC
                 name="companyName"
                 value={formData.companyName}
                 onChange={handleChange}
-                placeholder="e.g. GrowthSpace"
+                placeholder="e.g. Chennai Digital Media"
                 className="form-control"
                 required
               />
@@ -123,16 +123,16 @@ export default function Settings({ settings, onSaveSettings, onLoadDemoData, onC
           <div>
             <h2 style={{ fontSize: '1.2rem', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <FileText size={20} style={{ color: 'var(--accent-light)' }} />
-              Product & Offering
+              What You Sell
             </h2>
             <div className="form-group">
-              <label className="form-label" htmlFor="companyDescription">What does your company do?</label>
+              <label className="form-label" htmlFor="companyDescription">Explain Your Business</label>
               <textarea
                 id="companyDescription"
                 name="companyDescription"
                 value={formData.companyDescription}
                 onChange={handleChange}
-                placeholder="e.g. We build custom B2B web applications, dashboards, and API tools for growing tech startups."
+                placeholder="Describe what services you provide to your clients..."
                 className="form-control"
                 rows={3}
                 required
@@ -140,13 +140,13 @@ export default function Settings({ settings, onSaveSettings, onLoadDemoData, onC
             </div>
 
             <div className="form-group">
-              <label className="form-label" htmlFor="valueProposition">Your Value Proposition (What you sell / solve)</label>
+              <label className="form-label" htmlFor="valueProposition">How You Help Clients (Value Prop)</label>
               <textarea
                 id="valueProposition"
                 name="valueProposition"
                 value={formData.valueProposition}
                 onChange={handleChange}
-                placeholder="e.g. Helping startups launch features 4x faster with modern React code and scalable serverless backends."
+                placeholder="Explain the results you get for your clients (e.g. getting phone calls, increasing sales)..."
                 className="form-control"
                 rows={3}
                 required
@@ -157,7 +157,7 @@ export default function Settings({ settings, onSaveSettings, onLoadDemoData, onC
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             <button type="submit" className="btn btn-primary">
               <Save size={16} />
-              Save Configuration
+              Save Settings
             </button>
             {saveSuccess && (
               <span style={{ fontSize: '0.88rem', color: 'var(--success)', fontWeight: '600' }}>
@@ -171,18 +171,18 @@ export default function Settings({ settings, onSaveSettings, onLoadDemoData, onC
           <div className="glass-card">
             <h2 style={{ fontSize: '1.2rem', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Database size={20} style={{ color: 'var(--accent-light)' }} />
-              Database Utilities
+              Leads Data Management
             </h2>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '20px', lineHeight: '1.6' }}>
-              Manage your local lead database state. You can load simulated demo data to explore features, or reset the app database.
+              Load preset Chennai business listings to populate the table, or empty all records.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <button onClick={onLoadDemoData} type="button" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}>
                 <RefreshCw size={16} />
-                Load Mock Pipeline Data
+                Load Demo Businesses
               </button>
               <button onClick={onClearData} type="button" className="btn btn-danger" style={{ justifyContent: 'flex-start' }}>
-                Delete All Local Data
+                Clear All Leads
               </button>
             </div>
           </div>
@@ -190,11 +190,11 @@ export default function Settings({ settings, onSaveSettings, onLoadDemoData, onC
           <div className="glass-card" style={{ borderLeft: '4px solid var(--accent)' }}>
             <h3 style={{ fontSize: '1rem', marginBottom: '12px' }}>Quick Start Guide</h3>
             <ol style={{ paddingLeft: '20px', fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <li>Enter your Gemini API key in the Setup box (or leave blank to use the simulator).</li>
-              <li>Complete the Sender Profile and Offering fields.</li>
-              <li>Go to the <b>AI Prospector</b> tab to generate new leads for your location and niche.</li>
-              <li>Open the <b>Database</b> to qualify leads and assign score tiers using AI.</li>
-              <li>Use the <b>Kanban Pipeline</b> to manage lead stages and draft outreach templates.</li>
+              <li>Generate your key at <b>aistudio.google.com</b> and add it to Vercel (or input it above).</li>
+              <li>Fill out your Profile and What You Sell.</li>
+              <li>Go to the <b>Research Desk</b> page.</li>
+              <li>Type in any Company Name or Instagram Username (e.g. <code>HB Construction Chennai</code>) and click search.</li>
+              <li>Wait 1 second for the AI to collect details and add them directly to your Excel sheet table.</li>
             </ol>
           </div>
         </div>

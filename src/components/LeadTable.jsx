@@ -1,136 +1,119 @@
 import React, { useState } from 'react';
 import { 
   Search, Plus, Download, Upload, Trash2, Eye, 
-  ArrowUpDown, ExternalLink, X, Sparkles, Send, RefreshCw, AlertCircle
+  ArrowUpDown, ExternalLink, X, AlertCircle
 } from 'lucide-react';
-import { scoreLead } from '../utils/gemini';
 
 export default function LeadTable({ 
-  leads, onAddLead, onDeleteLead, onUpdateLeadStage, 
-  onUpdateLeadAI, settings, setView, setSelectedLeadForOutreach 
+  leads, onAddLead, onDeleteLead, onUpdateLeadField, setView 
 }) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [stageFilter, setStageFilter] = useState('all');
-  const [tierFilter, setTierFilter] = useState('all');
+  const [websiteFilter, setWebsiteFilter] = useState('all');
+  const [adsFilter, setAdsFilter] = useState('all');
   const [sortField, setSortField] = useState('companyName');
   const [sortAsc, setSortAsc] = useState(true);
 
-  // Modals & Drawer State
+  // Modal and Drawer States
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
-  const [scoringLoading, setScoringLoading] = useState(false);
 
-  // Form states
+  // Form states using simple English
   const [newLead, setNewLead] = useState({
     companyName: '',
-    contactName: '',
-    email: '',
-    website: '',
-    description: '',
-    industry: '',
-    location: '',
-    status: 'new'
+    contactNumber: '',
+    websiteStatus: 'Active website',
+    websiteUrl: '',
+    instagramLink: '',
+    facebookLink: '',
+    metaAdsStatus: 'Active',
+    instagramFollowers: '',
+    businessType: ''
   });
   const [importText, setImportText] = useState('');
 
-  // Handle lead submission
-  const handleAddSubmit = async (e) => {
+  const handleAddSubmit = (e) => {
     e.preventDefault();
-    setScoringLoading(true);
     
-    // Create new lead item with initial status
     const leadItem = {
       ...newLead,
       id: 'lead_' + Date.now(),
-      source: 'Manual Add',
       createdAt: new Date().toISOString()
     };
 
-    try {
-      // Proactively score the lead with AI
-      const aiResponse = await scoreLead(settings.apiKey, leadItem, settings);
-      leadItem.aiScore = aiResponse;
-    } catch (err) {
-      console.error("AI scoring failed during creation.", err);
-    }
-
     onAddLead(leadItem);
-    setScoringLoading(false);
     setIsAddModalOpen(false);
     setNewLead({
       companyName: '',
-      contactName: '',
-      email: '',
-      website: '',
-      description: '',
-      industry: '',
-      location: '',
-      status: 'new'
+      contactNumber: '',
+      websiteStatus: 'Active website',
+      websiteUrl: '',
+      instagramLink: '',
+      facebookLink: '',
+      metaAdsStatus: 'Active',
+      instagramFollowers: '',
+      businessType: ''
     });
   };
 
-  // Re-run AI scoring for selected lead
-  const handleRescoreLead = async (lead) => {
-    setScoringLoading(true);
-    try {
-      const aiResponse = await scoreLead(settings.apiKey, lead, settings);
-      onUpdateLeadAI(lead.id, aiResponse);
-      // Update drawer display
-      setSelectedLead({ ...lead, aiScore: aiResponse });
-    } catch (err) {
-      alert("Error scoring lead: " + err.message);
-    } finally {
-      setScoringLoading(false);
-    }
-  };
-
-  // CSV Export
+  // CSV Export structured specifically for Excel
   const handleExportCSV = () => {
     if (leads.length === 0) return;
     
-    const headers = ['Company Name', 'Contact Name', 'Email', 'Website', 'Industry', 'Location', 'Stage', 'AI Score', 'AI Tier', 'AI Analysis', 'Source'];
+    // Exact 8 headers requested
+    const headers = [
+      'Company Name', 
+      'WhatsApp and Mobile Number', 
+      'Website Status', 
+      'Website Link',
+      'Instagram Link', 
+      'Facebook Page Link', 
+      'Meta Ads Status', 
+      'Instagram Followers', 
+      'Business Type'
+    ];
+
     const rows = leads.map(l => [
       l.companyName,
-      l.contactName,
-      l.email,
-      l.website,
-      l.industry,
-      l.location,
-      l.status,
-      l.aiScore?.score || '',
-      l.aiScore?.tier || '',
-      l.aiScore?.analysis?.replace(/"/g, '""') || '',
-      l.source
+      l.contactNumber,
+      l.websiteStatus,
+      l.websiteUrl || '',
+      l.instagramLink,
+      l.facebookLink,
+      l.metaAdsStatus,
+      l.instagramFollowers,
+      l.businessType
     ]);
 
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + [headers.join(','), ...rows.map(e => e.map(val => `"${val}"`).join(","))].join("\n");
+    // Use BOM (Byte Order Mark) so Excel opens UTF-8 characters (like +91) correctly
+    const csvContent = "\uFEFF" + [
+      headers.join(','), 
+      ...rows.map(e => e.map(val => `"${val.replace(/"/g, '""')}"`).join(","))
+    ].join("\n");
     
-    const encodedUri = encodeURI(csvContent);
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `leads_ai_export_${Date.now()}.csv`);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `businesses_marketing_export_${Date.now()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  // CSV Import parser (Simple comma-delimited parser)
-  const handleImportSubmit = async (e) => {
+  // CSV Import (Simple comma-delimited parser)
+  const handleImportSubmit = (e) => {
     e.preventDefault();
     if (!importText.trim()) return;
 
     const lines = importText.split('\n');
     if (lines.length < 2) return;
 
-    // Assume headers are: companyName,contactName,email,website,industry,location
     const parsedLeads = [];
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
       
-      // Simple regex to parse CSV fields with quotes support
       const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(',');
       if (matches.length < 3) continue;
 
@@ -139,32 +122,23 @@ export default function LeadTable({
       parsedLeads.push({
         id: 'lead_csv_' + Date.now() + '_' + i,
         companyName: clean(matches[0]),
-        contactName: clean(matches[1]),
-        email: clean(matches[2]),
-        website: clean(matches[3]) || '',
-        industry: clean(matches[4]) || 'Other',
-        location: clean(matches[5]) || 'Remote',
-        status: 'new',
-        source: 'CSV Import',
+        contactNumber: clean(matches[1]),
+        websiteStatus: clean(matches[2]) || 'Active website',
+        websiteUrl: clean(matches[3]) || '',
+        instagramLink: clean(matches[4]) || '',
+        facebookLink: clean(matches[5]) || 'no page',
+        metaAdsStatus: clean(matches[6]) || 'Active',
+        instagramFollowers: clean(matches[7]) || '0 followers',
+        businessType: clean(matches[8]) || 'Business',
         createdAt: new Date().toISOString()
       });
     }
 
-    // Load and append
-    for (const lead of parsedLeads) {
-      // Score with fallback (instant local)
-      try {
-        const aiResponse = await scoreLead(settings.apiKey, lead, settings);
-        lead.aiScore = aiResponse;
-      } catch (e) {}
-      onAddLead(lead);
-    }
-
+    parsedLeads.forEach(lead => onAddLead(lead));
     setIsImportModalOpen(false);
     setImportText('');
   };
 
-  // Sort and Filter Logic
   const handleSort = (field) => {
     if (sortField === field) {
       setSortAsc(!sortAsc);
@@ -174,24 +148,28 @@ export default function LeadTable({
     }
   };
 
+  // Filters logic matching our simplified keys
   const filteredLeads = leads.filter(lead => {
-    const searchString = `${lead.companyName} ${lead.contactName} ${lead.email} ${lead.industry} ${lead.location}`.toLowerCase();
+    const searchString = `${lead.companyName} ${lead.contactNumber} ${lead.businessType} ${lead.instagramLink} ${lead.instagramFollowers}`.toLowerCase();
     const matchesSearch = searchString.includes(searchTerm.toLowerCase());
-    const matchesStage = stageFilter === 'all' || lead.status === stageFilter;
-    const matchesTier = tierFilter === 'all' || 
-      (tierFilter === 'unscored' && !lead.aiScore) ||
-      (lead.aiScore && lead.aiScore.tier === tierFilter);
     
-    return matchesSearch && matchesStage && matchesTier;
-  }).sort((a, b) => {
-    let aVal = a[sortField];
-    let bVal = b[sortField];
-    
-    if (sortField === 'score') {
-      aVal = a.aiScore?.score || 0;
-      bVal = b.aiScore?.score || 0;
+    // Website filter matches
+    let matchesWebsite = true;
+    if (websiteFilter !== 'all') {
+      matchesWebsite = lead.websiteStatus === websiteFilter;
     }
 
+    // Ads filter matches
+    let matchesAds = true;
+    if (adsFilter !== 'all') {
+      matchesAds = lead.metaAdsStatus === adsFilter;
+    }
+    
+    return matchesSearch && matchesWebsite && matchesAds;
+  }).sort((a, b) => {
+    let aVal = a[sortField] || '';
+    let bVal = b[sortField] || '';
+    
     if (aVal < bVal) return sortAsc ? -1 : 1;
     if (aVal > bVal) return sortAsc ? 1 : -1;
     return 0;
@@ -202,13 +180,13 @@ export default function LeadTable({
       {/* Header Panel */}
       <div className="header-container">
         <div className="header-title">
-          <h1>Leads Database</h1>
-          <p>Organize pipeline stages, view complete AI fit assessments, and import datasets.</p>
+          <h1>Leads Table</h1>
+          <p>Organize, search, and export your collected company data into Excel files.</p>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <button onClick={handleExportCSV} className="btn btn-secondary">
+          <button onClick={handleExportCSV} className="btn btn-secondary" style={{ color: 'var(--accent)' }}>
             <Download size={16} />
-            Export CSV
+            Excel Export
           </button>
           <button onClick={() => setIsImportModalOpen(true)} className="btn btn-secondary">
             <Upload size={16} />
@@ -216,17 +194,17 @@ export default function LeadTable({
           </button>
           <button onClick={() => setIsAddModalOpen(true)} className="btn btn-primary">
             <Plus size={16} />
-            Add Lead
+            Add Business
           </button>
         </div>
       </div>
 
-      {/* Filters Panel */}
+      {/* Filters Panel - Simple English */}
       <div className="glass-card" style={{ padding: '16px 20px', marginBottom: '24px', display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
         <div style={{ position: 'relative', flexGrow: 1, minWidth: '240px' }}>
           <input
             type="text"
-            placeholder="Search leads by company, contact, email or industry..."
+            placeholder="Search saved businesses..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="glass-input"
@@ -237,31 +215,27 @@ export default function LeadTable({
 
         <div style={{ display: 'flex', gap: '12px' }}>
           <select 
-            value={stageFilter} 
-            onChange={(e) => setStageFilter(e.target.value)}
+            value={websiteFilter} 
+            onChange={(e) => setWebsiteFilter(e.target.value)}
             className="glass-input" 
-            style={{ width: '160px', cursor: 'pointer' }}
+            style={{ width: '170px', cursor: 'pointer' }}
           >
-            <option value="all">All Stages</option>
-            <option value="new">New</option>
-            <option value="contacted">Contacted</option>
-            <option value="in-progress">In Progress</option>
-            <option value="qualified">Qualified</option>
-            <option value="closed">Closed</option>
+            <option value="all">All Websites</option>
+            <option value="Active website">Active website</option>
+            <option value="Have website but inactive">Have website but inactive</option>
+            <option value="No website">No website</option>
           </select>
 
           <select 
-            value={tierFilter} 
-            onChange={(e) => setTierFilter(e.target.value)}
+            value={adsFilter} 
+            onChange={(e) => setAdsFilter(e.target.value)}
             className="glass-input" 
-            style={{ width: '160px', cursor: 'pointer' }}
+            style={{ width: '170px', cursor: 'pointer' }}
           >
-            <option value="all">All AI Tiers</option>
-            <option value="A">Tier A (High Fit)</option>
-            <option value="B">Tier B (Medium Fit)</option>
-            <option value="C">Tier C (Low Fit)</option>
-            <option value="D">Tier D (Poor Fit)</option>
-            <option value="unscored">Unscored</option>
+            <option value="all">All Ads Statuses</option>
+            <option value="Active">Active Ads</option>
+            <option value="Have page but inactive ads or no ads">Inactive / No Ads</option>
+            <option value="No page no ads">No page no ads</option>
           </select>
         </div>
       </div>
@@ -271,8 +245,8 @@ export default function LeadTable({
         {filteredLeads.length === 0 ? (
           <div className="empty-state">
             <AlertCircle size={40} />
-            <h3>No Leads Found</h3>
-            <p>Try refining your search terms or filter selection.</p>
+            <h3>No Businesses Found</h3>
+            <p>Try clearing your search terms or filter selection.</p>
           </div>
         ) : (
           <div className="table-container">
@@ -280,22 +254,20 @@ export default function LeadTable({
               <thead>
                 <tr>
                   <th style={{ cursor: 'pointer' }} onClick={() => handleSort('companyName')}>
-                    Company <ArrowUpDown size={12} style={{ marginLeft: '6px', display: 'inline' }} />
+                    Company Name <ArrowUpDown size={12} style={{ marginLeft: '6px', display: 'inline' }} />
                   </th>
-                  <th style={{ cursor: 'pointer' }} onClick={() => handleSort('contactName')}>
-                    Contact <ArrowUpDown size={12} style={{ marginLeft: '6px', display: 'inline' }} />
+                  <th style={{ cursor: 'pointer' }} onClick={() => handleSort('contactNumber')}>
+                    Contact Numbers <ArrowUpDown size={12} style={{ marginLeft: '6px', display: 'inline' }} />
                   </th>
-                  <th style={{ cursor: 'pointer' }} onClick={() => handleSort('industry')}>
-                    Industry <ArrowUpDown size={12} style={{ marginLeft: '6px', display: 'inline' }} />
+                  <th>Website Status</th>
+                  <th>Instagram Link</th>
+                  <th>Facebook Link</th>
+                  <th>Ads Status (Ads Library)</th>
+                  <th>Followers</th>
+                  <th style={{ cursor: 'pointer' }} onClick={() => handleSort('businessType')}>
+                    Type <ArrowUpDown size={12} style={{ marginLeft: '6px', display: 'inline' }} />
                   </th>
-                  <th style={{ cursor: 'pointer' }} onClick={() => handleSort('location')}>
-                    Location <ArrowUpDown size={12} style={{ marginLeft: '6px', display: 'inline' }} />
-                  </th>
-                  <th style={{ cursor: 'pointer' }} onClick={() => handleSort('score')}>
-                    AI Fit Rating <ArrowUpDown size={12} style={{ marginLeft: '6px', display: 'inline' }} />
-                  </th>
-                  <th>Pipeline Stage</th>
-                  <th style={{ textAlign: 'right' }}>Actions</th>
+                  <th style={{ textAlign: 'right' }}>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -304,53 +276,54 @@ export default function LeadTable({
                     <td style={{ fontWeight: '700', color: 'var(--text-primary)' }}>
                       {lead.companyName}
                     </td>
+                    <td style={{ fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                      {lead.contactNumber}
+                    </td>
                     <td>
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span>{lead.contactName}</span>
-                        <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{lead.email}</span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <span className={`badge ${lead.websiteStatus === 'Active website' ? 'badge-web-active' : lead.websiteStatus === 'No website' ? 'badge-web-none' : 'badge-web-inactive'}`} style={{ fontSize: '0.68rem', padding: '2px 6px' }}>
+                          {lead.websiteStatus}
+                        </span>
+                        {lead.websiteUrl && (
+                          <a href={`https://${lead.websiteUrl}`} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ fontSize: '0.78rem', color: 'var(--accent)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
+                            {lead.websiteUrl.substring(0, 22)}... <ExternalLink size={10} />
+                          </a>
+                        )}
                       </div>
                     </td>
-                    <td>{lead.industry}</td>
-                    <td>{lead.location}</td>
                     <td>
-                      {lead.aiScore ? (
-                        <span className={`badge badge-score-${lead.aiScore.tier.toLowerCase()}`}>
-                          Tier {lead.aiScore.tier} ({lead.aiScore.score})
-                        </span>
+                      {lead.instagramLink ? (
+                        <a href={`https://${lead.instagramLink}`} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '0.82rem' }}>
+                          @{lead.instagramLink.split('/').pop()}
+                        </a>
                       ) : (
-                        <button
-                          onClick={async (e) => {
-                            e.stopPropagation();
-                            await handleRescoreLead(lead);
-                          }}
-                          className="btn btn-secondary"
-                          style={{ padding: '4px 10px', fontSize: '0.75rem', display: 'flex', gap: '4px', alignItems: 'center' }}
-                        >
-                          <Sparkles size={12} />
-                          Assess
-                        </button>
+                        <span style={{ color: 'var(--text-muted)' }}>none</span>
                       )}
                     </td>
-                    <td onClick={(e) => e.stopPropagation()}>
-                      <select
-                        value={lead.status}
-                        onChange={(e) => onUpdateLeadStage(lead.id, e.target.value)}
-                        className="glass-input"
-                        style={{ padding: '6px 12px', fontSize: '0.82rem', width: '130px', cursor: 'pointer' }}
-                      >
-                        <option value="new">New</option>
-                        <option value="contacted">Contacted</option>
-                        <option value="in-progress">In Progress</option>
-                        <option value="qualified">Qualified</option>
-                        <option value="closed">Closed</option>
-                      </select>
+                    <td>
+                      {lead.facebookLink === 'no page' ? (
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>no page</span>
+                      ) : lead.facebookLink ? (
+                        <a href={`https://${lead.facebookLink}`} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '0.82rem' }}>
+                          fb.com/{lead.facebookLink.split('/').pop()}
+                        </a>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)' }}>none</span>
+                      )}
                     </td>
+                    <td>
+                      <span className={`badge ${lead.metaAdsStatus === 'Active' ? 'badge-ads-active' : lead.metaAdsStatus === 'No page no ads' ? 'badge-web-none' : 'badge-ads-inactive'}`} style={{ fontSize: '0.68rem', padding: '2px 6px' }}>
+                        {lead.metaAdsStatus}
+                      </span>
+                    </td>
+                    <td style={{ fontWeight: '600' }}>{lead.instagramFollowers}</td>
+                    <td style={{ fontSize: '0.85rem' }}>{lead.businessType}</td>
                     <td style={{ textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
                       <div style={{ display: 'inline-flex', gap: '8px' }}>
                         <button
                           onClick={() => setSelectedLead(lead)}
                           className="btn btn-secondary btn-icon"
-                          title="View Assessment Details"
+                          title="Open Details"
                         >
                           <Eye size={14} />
                         </button>
@@ -371,12 +344,12 @@ export default function LeadTable({
         )}
       </div>
 
-      {/* Sliding Details Drawer */}
+      {/* Detail Sliding Drawer */}
       <div className={`drawer ${selectedLead ? 'open' : ''}`}>
         {selectedLead && (
           <>
             <div className="drawer-header">
-              <h2 style={{ fontSize: '1.25rem', fontWeight: '800' }}>Lead Profile Profile</h2>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: '800' }}>Company Details</h2>
               <button 
                 onClick={() => setSelectedLead(null)} 
                 className="btn btn-secondary btn-icon"
@@ -385,113 +358,70 @@ export default function LeadTable({
                 <X size={16} />
               </button>
             </div>
-            <div className="drawer-body">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
-                <div>
-                  <h3 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '4px' }}>{selectedLead.companyName}</h3>
-                  {selectedLead.website && (
-                    <a href={`https://${selectedLead.website}`} target="_blank" rel="noreferrer" style={{ fontSize: '0.85rem', color: 'var(--accent-light)', display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none' }}>
-                      {selectedLead.website} <ExternalLink size={12} />
+            <div className="drawer-body" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div>
+                <h3 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '4px' }}>{selectedLead.companyName}</h3>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Type: <b>{selectedLead.businessType}</b></span>
+              </div>
+
+              <div>
+                <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '6px' }}>Contact Details</h4>
+                <p style={{ fontWeight: '600', fontSize: '0.95rem' }}>{selectedLead.contactNumber}</p>
+              </div>
+
+              <div>
+                <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '6px' }}>Website Audit</h4>
+                <span className={`badge ${selectedLead.websiteStatus === 'Active website' ? 'badge-web-active' : selectedLead.websiteStatus === 'No website' ? 'badge-web-none' : 'badge-web-inactive'}`} style={{ marginBottom: '8px' }}>
+                  {selectedLead.websiteStatus}
+                </span>
+                {selectedLead.websiteUrl && (
+                  <p style={{ fontSize: '0.9rem' }}>
+                    URL: <a href={`https://${selectedLead.websiteUrl}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+                      {selectedLead.websiteUrl}
                     </a>
-                  )}
-                </div>
-                {selectedLead.aiScore && (
-                  <div style={{ textAlign: 'right' }}>
-                    <span className={`badge badge-score-${selectedLead.aiScore.tier.toLowerCase()}`} style={{ fontSize: '0.85rem', padding: '6px 14px' }}>
-                      Tier {selectedLead.aiScore.tier}
-                    </span>
-                    <div style={{ fontSize: '1.5rem', fontWeight: '800', marginTop: '6px', color: 'var(--text-primary)' }}>
-                      {selectedLead.aiScore.score}/100
-                    </div>
-                  </div>
+                  </p>
                 )}
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <div>
-                  <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '6px' }}>Main Contact</h4>
-                  <p style={{ fontWeight: '600', fontSize: '0.95rem' }}>{selectedLead.contactName}</p>
-                  <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)' }}>{selectedLead.email}</p>
-                </div>
-
-                <div>
-                  <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '6px' }}>Company Information</h4>
-                  <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>{selectedLead.description}</p>
-                  <div style={{ display: 'flex', gap: '16px', marginTop: '12px', fontSize: '0.85rem' }}>
-                    <span><b>Industry:</b> {selectedLead.industry}</span>
-                    <span><b>Location:</b> {selectedLead.location}</span>
-                  </div>
-                </div>
-
-                <hr style={{ border: 'none', borderTop: '1px solid var(--border)' }} />
-
-                {/* AI assessment section */}
-                <div>
-                  <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Sparkles size={14} style={{ color: 'var(--accent-light)' }} />
-                    AI Fit Analysis
-                  </h4>
-                  {selectedLead.aiScore ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                      <div>
-                        <h5 style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>Target Pain Points:</h5>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                          {selectedLead.aiScore.painPoints?.map((pain, idx) => (
-                            <span key={idx} style={{ fontSize: '0.8rem', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid var(--border)', padding: '4px 10px', borderRadius: '4px', color: 'var(--text-secondary)' }}>
-                              {pain}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                      <div>
-                        <h5 style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>Analysis:</h5>
-                        <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: '1.6', background: 'rgba(0,0,0,0.15)', padding: '12px', borderRadius: '8px', borderLeft: '3px solid var(--accent)' }}>
-                          {selectedLead.aiScore.analysis}
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <p style={{ fontSize: '0.85rem', fontStyle: 'italic', color: 'var(--text-muted)' }}>No qualification report available yet.</p>
-                  )}
-                </div>
-
-                <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-                  <button
-                    onClick={() => {
-                      setSelectedLeadForOutreach(selectedLead);
-                      setView('outreach');
-                    }}
-                    className="btn btn-primary"
-                    style={{ flexGrow: 1 }}
-                  >
-                    <Send size={16} />
-                    Write Outreach
-                  </button>
-                  <button
-                    onClick={() => handleRescoreLead(selectedLead)}
-                    disabled={scoringLoading}
-                    className="btn btn-secondary"
-                    title="Recalculate AI Score"
-                  >
-                    {scoringLoading ? (
-                      <div className="spinner" style={{ width: '16px', height: '16px' }} />
-                    ) : (
-                      <RefreshCw size={16} />
-                    )}
-                  </button>
+              <div>
+                <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '6px' }}>Social Profiles</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.9rem' }}>
+                  <span><b>Instagram:</b> {selectedLead.instagramLink ? (
+                    <a href={`https://${selectedLead.instagramLink}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)' }}>@{selectedLead.instagramLink.split('/').pop()}</a>
+                  ) : 'no link'}</span>
+                  <span><b>Followers:</b> {selectedLead.instagramFollowers}</span>
+                  <span><b>Facebook:</b> {selectedLead.facebookLink === 'no page' ? 'no page' : selectedLead.facebookLink ? (
+                    <a href={`https://${selectedLead.facebookLink}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)' }}>fb.com/{selectedLead.facebookLink.split('/').pop()}</a>
+                  ) : 'no link'}</span>
                 </div>
               </div>
-            </div>
-          </>
-        )}
+
+              <div>
+                <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '6px' }}>Meta Ads Library Status</h4>
+                <span className={`badge ${selectedLead.metaAdsStatus === 'Active' ? 'badge-ads-active' : selectedLead.metaAdsStatus === 'No page no ads' ? 'badge-web-none' : 'badge-ads-inactive'}`}>
+                  {selectedLead.metaAdsStatus === 'Active' ? 'Running Active Ads' : selectedLead.metaAdsStatus === 'No page no ads' ? 'No page no ads' : 'Inactive Ads / No Ads Running'}
+                </span>
+              </div>
+
+              <div style={{ marginTop: 'auto', paddingTop: '20px' }}>
+                <button
+                  onClick={() => setSelectedLead(null)}
+                  className="btn btn-secondary"
+                  style={{ width: '100%' }}
+                >
+                  Close Details
+                </button>
+              </div>
+            </>
+          )}
       </div>
 
-      {/* Add Lead Modal */}
+      {/* Add Lead Modal - Simple English */}
       {isAddModalOpen && (
         <div className="modal-overlay" onClick={() => setIsAddModalOpen(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: '800' }}>Add New Lead</h2>
+            <div style={{ display: 'flex', justifyBetween: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: '800' }}>Add Business Manually</h2>
               <button onClick={() => setIsAddModalOpen(false)} className="btn btn-secondary btn-icon" style={{ borderRadius: '50%' }}>
                 <X size={16} />
               </button>
@@ -504,105 +434,114 @@ export default function LeadTable({
                   required
                   value={newLead.companyName}
                   onChange={(e) => setNewLead({ ...newLead, companyName: e.target.value })}
-                  placeholder="e.g. Acme Corp"
+                  placeholder="e.g. HB Construction Chennai"
                   className="form-control"
                 />
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Contact Person</label>
-                  <input
-                    type="text"
-                    required
-                    value={newLead.contactName}
-                    onChange={(e) => setNewLead({ ...newLead, contactName: e.target.value })}
-                    placeholder="e.g. Jane Doe"
-                    className="form-control"
-                  />
-                </div>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Contact Email</label>
-                  <input
-                    type="email"
-                    required
-                    value={newLead.email}
-                    onChange={(e) => setNewLead({ ...newLead, email: e.target.value })}
-                    placeholder="e.g. jane@acme.com"
-                    className="form-control"
-                  />
-                </div>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Industry</label>
-                  <input
-                    type="text"
-                    required
-                    value={newLead.industry}
-                    onChange={(e) => setNewLead({ ...newLead, industry: e.target.value })}
-                    placeholder="e.g. Technology"
-                    className="form-control"
-                  />
-                </div>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Location</label>
-                  <input
-                    type="text"
-                    required
-                    value={newLead.location}
-                    onChange={(e) => setNewLead({ ...newLead, location: e.target.value })}
-                    placeholder="e.g. New York, NY"
-                    className="form-control"
-                  />
-                </div>
-              </div>
+
               <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">Website (optional)</label>
+                <label className="form-label">WhatsApp & Mobile Number</label>
                 <input
                   type="text"
-                  value={newLead.website}
-                  onChange={(e) => setNewLead({ ...newLead, website: e.target.value })}
-                  placeholder="e.g. www.acme.com"
+                  required
+                  value={newLead.contactNumber}
+                  onChange={(e) => setNewLead({ ...newLead, contactNumber: e.target.value })}
+                  placeholder="e.g. WhatsApp: +91 98401 54321 / Mobile: +91 94440 98765"
                   className="form-control"
                 />
               </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Website Status</label>
+                  <select
+                    value={newLead.websiteStatus}
+                    onChange={(e) => setNewLead({ ...newLead, websiteStatus: e.target.value })}
+                    className="form-control"
+                  >
+                    <option value="Active website">Active website</option>
+                    <option value="Have website but inactive">Have website but inactive</option>
+                    <option value="No website">No website</option>
+                  </select>
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Website Link</label>
+                  <input
+                    type="text"
+                    value={newLead.websiteUrl}
+                    onChange={(e) => setNewLead({ ...newLead, websiteUrl: e.target.value })}
+                    placeholder="e.g. www.hbc.com"
+                    className="form-control"
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Instagram Link</label>
+                  <input
+                    type="text"
+                    value={newLead.instagramLink}
+                    onChange={(e) => setNewLead({ ...newLead, instagramLink: e.target.value })}
+                    placeholder="instagram.com/handle"
+                    className="form-control"
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Instagram Followers</label>
+                  <input
+                    type="text"
+                    value={newLead.instagramFollowers}
+                    onChange={(e) => setNewLead({ ...newLead, instagramFollowers: e.target.value })}
+                    placeholder="e.g. 2,400 followers"
+                    className="form-control"
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Facebook Page Link</label>
+                  <input
+                    type="text"
+                    value={newLead.facebookLink}
+                    onChange={(e) => setNewLead({ ...newLead, facebookLink: e.target.value })}
+                    placeholder="facebook.com/page (or no page)"
+                    className="form-control"
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Ads Status (Meta Ads)</label>
+                  <select
+                    value={newLead.metaAdsStatus}
+                    onChange={(e) => setNewLead({ ...newLead, metaAdsStatus: e.target.value })}
+                    className="form-control"
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Have page but inactive ads or no ads">Have page but inactive ads or no ads</option>
+                    <option value="No page no ads">No page no ads</option>
+                  </select>
+                </div>
+              </div>
+
               <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">Company Description</label>
-                <textarea
-                  value={newLead.description}
-                  onChange={(e) => setNewLead({ ...newLead, description: e.target.value })}
-                  placeholder="Briefly describe what they do or standard challenges..."
+                <label className="form-label">Business Type / Category</label>
+                <input
+                  type="text"
+                  required
+                  value={newLead.businessType}
+                  onChange={(e) => setNewLead({ ...newLead, businessType: e.target.value })}
+                  placeholder="e.g. Construction Company, Bridal Studio"
                   className="form-control"
-                  rows={3}
                 />
               </div>
 
               <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
-                <button 
-                  type="button" 
-                  onClick={() => setIsAddModalOpen(false)} 
-                  className="btn btn-secondary"
-                  style={{ flexGrow: 1 }}
-                >
+                <button type="button" onClick={() => setIsAddModalOpen(false)} className="btn btn-secondary" style={{ flexGrow: 1 }}>
                   Cancel
                 </button>
-                <button 
-                  type="submit" 
-                  disabled={scoringLoading}
-                  className="btn btn-primary"
-                  style={{ flexGrow: 1 }}
-                >
-                  {scoringLoading ? (
-                    <>
-                      <div className="spinner" style={{ width: '16px', height: '16px', marginRight: '8px' }} />
-                      AI Scoring...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles size={16} />
-                      Add & Score Lead
-                    </>
-                  )}
+                <button type="submit" className="btn btn-primary" style={{ flexGrow: 1 }}>
+                  Save Business
                 </button>
               </div>
             </form>
@@ -614,23 +553,23 @@ export default function LeadTable({
       {isImportModalOpen && (
         <div className="modal-overlay" onClick={() => setIsImportModalOpen(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: '800' }}>Import Leads (CSV Data)</h2>
+            <div style={{ display: 'flex', justifyBetween: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: '800' }}>Import Businesses</h2>
               <button onClick={() => setIsImportModalOpen(false)} className="btn btn-secondary btn-icon" style={{ borderRadius: '50%' }}>
                 <X size={16} />
               </button>
             </div>
             <form onSubmit={handleImportSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-                Paste raw comma-separated CSV rows below. Make sure the headers match the format:<br />
-                <code>companyName,contactName,email,website,industry,location</code>
+                Paste comma-separated CSV rows below. Headers must match:<br />
+                <code>companyName,contactNumber,websiteStatus,websiteUrl,instagramLink,facebookLink,metaAdsStatus,instagramFollowers,businessType</code>
               </p>
               <textarea
                 className="form-control"
                 rows={8}
                 value={importText}
                 onChange={(e) => setImportText(e.target.value)}
-                placeholder="companyName,contactName,email,website,industry,location&#10;Acme Corp,Jane Doe,jane@acme.com,www.acme.com,Software,New York&#10;Globex,John Smith,john@globex.co,www.globex.co,Manufacturing,Austin"
+                placeholder="HB Construction,WhatsApp: +91 984...,Active website,www.hbc.com,instagram.com/hbc,facebook.com/hbc,Active,2800 followers,Construction Company"
                 required
                 style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
               />
@@ -639,7 +578,7 @@ export default function LeadTable({
                   Cancel
                 </button>
                 <button type="submit" className="btn btn-primary" style={{ flexGrow: 1 }}>
-                  Process & Import
+                  Import Data
                 </button>
               </div>
             </form>

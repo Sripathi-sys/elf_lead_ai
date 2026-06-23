@@ -1,7 +1,7 @@
 /**
- * Utility functions to interface with the Gemini API.
+ * Utility functions to interface with the Gemini API for company research.
  * Uses vanilla fetch to connect to Gemini 1.5 Flash.
- * Falls back to high-fidelity simulated AI heuristics if no API Key is provided.
+ * Falls back to high-fidelity simulated research if no API Key is provided.
  */
 
 // Helper to call Gemini REST API
@@ -48,179 +48,105 @@ async function callGemini(apiKey, prompt, jsonMode = false) {
   }
 }
 
-// 1. Prospect/Scrape leads using AI
-export async function prospectLeads(apiKey, industry, location, icp) {
-  const localFallbacks = [
-    {
-      companyName: `${industry.replace(/s$/, '')}Flow Solutions`,
-      contactName: "Sarah Jenkins",
-      email: "sarah.j@flowsolutions.co",
-      website: `www.${industry.toLowerCase().replace(/[^a-z0-9]/g, '')}flow.com`,
-      description: `A fast-growing ${industry.toLowerCase()} company based in ${location} seeking to scale operations.`,
-      industry: industry,
-      location: location,
-      source: "AI Prospector"
-    },
-    {
-      companyName: `Apex ${industry} Group`,
-      contactName: "Marcus Vance",
-      email: "m.vance@apexgroup.io",
-      website: `www.apex${industry.toLowerCase().replace(/[^a-z0-9]/g, '')}.io`,
-      description: `Enterprise-level provider of ${industry.toLowerCase()} solutions in the greater ${location} area.`,
-      industry: industry,
-      location: location,
-      source: "AI Prospector"
-    },
-    {
-      companyName: `Nova ${location.split(',')[0]} Enterprises`,
-      contactName: "Elena Rostova",
-      email: "elena.r@novaenterprises.com",
-      website: `www.nova${location.toLowerCase().split(',')[0].replace(/[^a-z0-9]/g, '')}.com`,
-      description: `Medium-sized business focused on integrating new tech into their ${industry.toLowerCase()} services.`,
-      industry: industry,
-      location: location,
-      source: "AI Prospector"
-    },
-    {
-      companyName: `Vanguard ${industry.split(' ')[0]}`,
-      contactName: "David Cho",
-      email: "d.cho@vanguardcorp.org",
-      website: `www.vanguard${industry.toLowerCase().split(' ')[0].replace(/[^a-z0-9]/g, '')}.org`,
-      description: `Established player looking to optimize their workflow and address current customer pain points.`,
-      industry: industry,
-      location: location,
-      source: "AI Prospector"
-    },
-    {
-      companyName: `Zenith Digital`,
-      contactName: "Chloe Dupont",
-      email: "chloe@zenithdigital.net",
-      website: "www.zenithdigital.net",
-      description: `A boutique agency in ${location} specializing in digital operations for the ${industry.toLowerCase()} sector.`,
-      industry: industry,
-      location: location,
-      source: "AI Prospector"
-    }
-  ];
-
-  if (!apiKey) {
-    // Artificial delay to simulate AI generation
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    return localFallbacks;
+// Replaces the old prospecting/scoring/outreach methods with a single powerful research tool
+export async function researchCompany(apiKey, query) {
+  // Define fallback values based on the input text
+  const cleanQuery = query.trim().replace(/^@/, '');
+  const lowerQuery = cleanQuery.toLowerCase();
+  
+  let detectedType = "Bridal & Fashion Boutique";
+  if (lowerQuery.includes('construction') || lowerQuery.includes('builder') || lowerQuery.includes('hb')) {
+    detectedType = "Construction Company";
+  } else if (lowerQuery.includes('architect') || lowerQuery.includes('interior') || lowerQuery.includes('design')) {
+    detectedType = "Architectural Firm";
+  } else if (lowerQuery.includes('cafe') || lowerQuery.includes('restaurant') || lowerQuery.includes('food')) {
+    detectedType = "Food & Restaurant";
+  } else if (lowerQuery.includes('fitness') || lowerQuery.includes('gym') || lowerQuery.includes('coach')) {
+    detectedType = "Fitness & Gym";
   }
 
-  const prompt = `You are a professional B2B lead generation assistant.
-Generate 5 realistic, high-quality target prospect leads for a B2B campaign based on:
-Target Industry: ${industry}
-Target Location: ${location}
-Ideal Customer Profile (ICP) notes: ${icp || 'Any relevant business'}
-
-For each lead, create realistic company and contact details. Return ONLY a valid JSON array of objects. Do not include markdown formatting like \`\`\`json.
-Each object in the array must have precisely these string fields:
-- companyName
-- contactName
-- email
-- website
-- description (1-2 sentences about what they do and their likely challenges)
-- industry (should be: ${industry})
-- location (should be: ${location})
-- source (should be: "AI Prospector")`;
-
-  try {
-    const rawResult = await callGemini(apiKey, prompt, true);
-    // Parse json
-    const cleanedJsonText = rawResult.replace(/```json/g, '').replace(/```/g, '').trim();
-    return JSON.parse(cleanedJsonText);
-  } catch (err) {
-    console.warn("Falling back to local leads database simulation.", err);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return localFallbacks;
+  // Set mock follower counts
+  let followers = "4,200 followers";
+  if (detectedType === "Bridal & Fashion Boutique") {
+    followers = "18,400 followers";
+  } else if (detectedType === "Construction Company") {
+    followers = "1,850 followers";
+  } else if (detectedType === "Architectural Firm") {
+    followers = "6,900 followers";
   }
-}
 
-// 2. Score & Enrich a lead
-export async function scoreLead(apiKey, lead, senderProfile) {
-  const defaultFallback = {
-    score: 78,
-    tier: "B",
-    painPoints: ["Scaling customer outreach", "Legacy workflows", "Integration bottlenecks"],
-    analysis: "Strong company profile with clear alignment to general B2B services. Likely has budget but might require a structured onboarding demo."
+  // Set web status
+  let webStatus = "Active website";
+  let webUrl = `www.${cleanQuery.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()}.com`;
+  if (lowerQuery.includes('inactive') || Math.random() < 0.25) {
+    webStatus = "Have website but inactive";
+  } else if (lowerQuery.includes('no-web') || Math.random() < 0.2) {
+    webStatus = "No website";
+    webUrl = "";
+  }
+
+  // Set ads status
+  let adsStatus = "Active";
+  if (Math.random() < 0.4) {
+    adsStatus = "Have page but inactive ads or no ads";
+  } else if (Math.random() < 0.15) {
+    adsStatus = "No page no ads";
+  }
+
+  // Set mobile & whatsapp number (Indian local formats if Chennai is mentioned, else general)
+  const isIndian = lowerQuery.includes('chennai') || lowerQuery.includes('india') || Math.random() < 0.7;
+  const whatsappNumber = isIndian 
+    ? `WhatsApp: +91 98401 ${Math.floor(10000 + Math.random() * 90000)}`
+    : `WhatsApp: +1 (555) 019-${Math.floor(1000 + Math.random() * 9000)}`;
+  const mobileNumber = isIndian
+    ? `Mobile: +91 94440 ${Math.floor(10000 + Math.random() * 90000)}`
+    : `Mobile: +1 (555) 014-${Math.floor(1000 + Math.random() * 9000)}`;
+
+  const localFallback = {
+    companyName: query.includes('@') ? cleanQuery.charAt(0).toUpperCase() + cleanQuery.slice(1) : query,
+    contactNumber: `${whatsappNumber} / ${mobileNumber}`,
+    websiteStatus: webStatus,
+    websiteUrl: webUrl,
+    instagramLink: `instagram.com/${cleanQuery.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase()}`,
+    facebookLink: adsStatus === "No page no ads" ? "no page" : `facebook.com/${cleanQuery.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase()}`,
+    metaAdsStatus: adsStatus,
+    instagramFollowers: followers,
+    businessType: detectedType
   };
 
-  const senderDesc = senderProfile?.companyDescription || "B2B technology solutions and agency services";
-  const targetOffer = senderProfile?.valueProposition || "increasing operational efficiency and sales via smart software";
-
   if (!apiKey) {
-    await new Promise(resolve => setTimeout(resolve, 1200));
-    
-    // Smart heuristic simulation based on industry match
-    let score = 55 + Math.floor(Math.random() * 30);
-    const matchTerms = [lead.industry, lead.description, lead.companyName].join(" ").toLowerCase();
-    const offerTerms = [senderDesc, targetOffer].join(" ").toLowerCase();
-
-    // Check overlaps
-    let overlapCount = 0;
-    const keywords = ['marketing', 'software', 'tech', 'finance', 'sales', 'consulting', 'medical', 'dental', 'retail'];
-    keywords.forEach(kw => {
-      if (matchTerms.includes(kw) && offerTerms.includes(kw)) {
-        overlapCount++;
-      }
-    });
-
-    score += overlapCount * 10;
-    if (score > 98) score = 98;
-    
-    let tier = "C";
-    if (score >= 85) tier = "A";
-    else if (score >= 70) tier = "B";
-    else if (score >= 50) tier = "C";
-    else tier = "D";
-
-    const commonPains = {
-      tech: ["Legacy code maintainability", "Speed of feature deployment", "Developer hiring costs"],
-      marketing: ["Low lead conversion rates", "High ad spend client attrition", "Reporting automation"],
-      finance: ["Security & compliance overhead", "Manual reconciliation", "Data silos"],
-      medical: ["Patient retention", "HIPAA compliant messaging", "Appointment scheduling friction"],
-      retail: ["Inventory sync latency", "Cart abandonment rates", "B2B wholesale order volume"],
-    };
-
-    let industryKey = "tech";
-    Object.keys(commonPains).forEach(k => {
-      if (lead.industry.toLowerCase().includes(k)) {
-        industryKey = k;
-      }
-    });
-
-    return {
-      score,
-      tier,
-      painPoints: commonPains[industryKey],
-      analysis: `Evaluated ${lead.companyName} based on target offer of "${targetOffer.substring(0, 50)}...". Overlap analysis suggests ${tier}-Tier fit. Main contact is ${lead.contactName}.`
-    };
+    // Artificial delay to simulate AI search scraping
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    return localFallback;
   }
 
-  const prompt = `You are an expert sales qualifier and lead scoring engine.
-We are analyzing this prospect lead for our business.
+  const prompt = `You are a professional digital marketing research assistant.
+Research the following business query: "${query}"
 
-OUR BUSINESS PROFILE:
-- Description: ${senderDesc}
-- Value Proposition / What we sell: ${targetOffer}
+Find or deduce accurate, realistic B2B lead details for this query based on internet data.
+Search criteria and definitions:
+1. Company Name (extract the clean brand/business name, e.g., "HB Construction Chennai")
+2. WhatsApp and Mobile Number (find contact numbers for owner or manager, formatting as "WhatsApp: [number] / Mobile: [number]")
+3. Website Status (must be precisely one of: "Active website", "Have website but inactive", or "No website"). Define inactive as having a domain but the site is down, broken, or has hosting errors.
+4. Website URL (include URL link if website exists)
+5. Business Instagram Link (e.g. instagram.com/[username])
+6. Business Facebook Page Link (link to page, or put "no page" if none exists)
+7. Meta Ads Status (must be precisely one of: "Active" if running ads, "Have page but inactive ads or no ads" if page exists but no ads are running, or "No page no ads")
+8. Instagram Followers (estimate or retrieve follower count, e.g., "12.5k followers" or "4,200 followers")
+9. Business Type / Category (e.g., construction company, bridal shop, architect, restaurant)
 
-PROSPECT LEAD DETAILS:
-- Company Name: ${lead.companyName}
-- Industry: ${lead.industry}
-- Location: ${lead.location}
-- Description: ${lead.description}
-
-Evaluate the qualification of this lead on a scale of 0 to 100 (where 100 is absolute perfect fit). Assign a Tier (A, B, C, or D) based on the score (A: >=85, B: 70-84, C: 50-69, D: <50). Identify 3 primary pain points they likely have which we can solve. Provide a brief analysis paragraph justifying your scoring.
-
-Return ONLY a valid JSON object. Do not include markdown formatting.
-Format:
+Return ONLY a valid JSON object. Do not include markdown formatting like \`\`\`json.
+Make sure the JSON keys match these fields exactly:
 {
-  "score": number,
-  "tier": "A" | "B" | "C" | "D",
-  "painPoints": ["painpoint 1", "painpoint 2", "painpoint 3"],
-  "analysis": "string"
+  "companyName": "string",
+  "contactNumber": "string",
+  "websiteStatus": "Active website" | "Have website but inactive" | "No website",
+  "websiteUrl": "string",
+  "instagramLink": "string",
+  "facebookLink": "string",
+  "metaAdsStatus": "Active" | "Have page but inactive ads or no ads" | "No page no ads",
+  "instagramFollowers": "string",
+  "businessType": "string"
 }`;
 
   try {
@@ -228,78 +154,8 @@ Format:
     const cleanedJsonText = rawResult.replace(/```json/g, '').replace(/```/g, '').trim();
     return JSON.parse(cleanedJsonText);
   } catch (err) {
-    console.warn("Error scoring lead via Gemini. Using local heuristic fallback.", err);
-    return defaultFallback;
+    console.warn("Falling back to local research simulation.", err);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return localFallback;
   }
-}
-
-// 3. Write Personalized Cold Outreach
-export async function generateOutreach(apiKey, lead, senderProfile, options) {
-  const { tone = "Professional", length = "Medium", type = "Email" } = options;
-  
-  const senderName = senderProfile?.senderName || "Alex Rivera";
-  const senderCompany = senderProfile?.companyName || "GrowthSpace";
-  const senderDesc = senderProfile?.companyDescription || "B2B technology solutions and agency services";
-  const targetOffer = senderProfile?.valueProposition || "increasing operational efficiency and sales via smart software";
-
-  const defaultEmail = `Subject: Quick question regarding ${lead.companyName}'s current operations
-
-Hi ${lead.contactName.split(' ')[0]},
-
-I came across ${lead.companyName} and was impressed by your focus on the ${lead.industry} space in ${lead.location}. 
-
-Many companies like yours encounter challenges with workflow bottlenecks and scaling outreach. We specialize in helping businesses like yours resolve these exact issues. Our clients typically see a 30% increase in productivity.
-
-Would you be open to a brief 10-minute chat next Thursday to see if we might be a fit to help ${lead.companyName} scale?
-
-Best regards,
-
-${senderName}
-${senderTitle(senderProfile)}
-${senderCompany}`;
-
-  const defaultLinkedIn = `Hi ${lead.contactName.split(' ')[0]}, saw your profile and your work in ${lead.industry} at ${lead.companyName}. We help companies like yours solve operational hurdles and boost productivity. Would love to connect and share a few ideas!`;
-
-  if (!apiKey) {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    return type === "LinkedIn" ? defaultLinkedIn : defaultEmail;
-  }
-
-  const prompt = `You are a world-class B2B copywriter specializing in high-converting cold outreach.
-Write a personalized ${type} outreach message to:
-Recipient: ${lead.contactName} (Role: Decision Maker at ${lead.companyName})
-Recipient Industry: ${lead.industry}
-Recipient Details & Challenges: ${lead.description}
-Recipient Key Pain Points: ${lead.painPoints ? lead.painPoints.join(", ") : "Workflow scale"}
-
-SENDER INFO:
-- Name: ${senderName}
-- Company: ${senderCompany}
-- Business offering: ${senderDesc}
-- Our Value Prop: ${targetOffer}
-
-OUTREACH SPECIFICATIONS:
-- Tone: ${tone} (e.g. professional, friendly, bold, casual)
-- Length: ${length} (e.g. Short, Medium, Long)
-- Outreach Type: ${type} (Email or LinkedIn connection request)
-
-Requirements:
-- If Email: Include a compelling, clickable subject line at the very top.
-- Customize the content to relate specifically to the recipient's industry and pain points.
-- Avoid generic placeholders (like "[Company Name]"). Use the provided details directly.
-- The tone should sound human, not robotic.
-
-Return only the text of the message (Subject + Body, or just body if LinkedIn).`;
-
-  try {
-    return await callGemini(apiKey, prompt, false);
-  } catch (err) {
-    console.warn("Gemini outreach writing failed. Returning local copy template.", err);
-    return type === "LinkedIn" ? defaultLinkedIn : defaultEmail;
-  }
-}
-
-function senderTitle(profile) {
-  if (profile?.senderTitle) return profile.senderTitle;
-  return "Head of Business Development";
 }

@@ -1,28 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  LayoutDashboard, Database, Kanban as KanbanIcon, 
-  Sparkles, Send, Settings as SettingsIcon, Menu, ArrowRight
+  LayoutDashboard, Search, Database, Settings as SettingsIcon, Sparkles
 } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import LeadTable from './components/LeadTable';
-import Kanban from './components/Kanban';
 import Prospector from './components/Prospector';
-import Outreach from './components/Outreach';
 import Settings from './components/Settings';
 
 export default function App() {
   const [view, setView] = useState('dashboard');
   const [leads, setLeads] = useState([]);
-  const [selectedLeadForOutreach, setSelectedLeadForOutreach] = useState(null);
   
-  // Default Settings Profile
+  // Default Settings Profile using simple English
   const [settings, setSettings] = useState({
     apiKey: import.meta.env.VITE_GEMINI_API_KEY || '',
-    senderName: 'Alex Rivera',
-    senderTitle: 'Founder & CEO',
-    companyName: 'GrowthSpace',
-    companyDescription: 'We build premium web applications, dashboards, and automated lead intelligence pipelines for tech startups.',
-    valueProposition: 'Helping startups design, build, and launch features 4x faster with modern React code and tailored B2B outreach integrations.'
+    senderName: 'Sanjay Kumar',
+    senderTitle: 'Marketing Manager',
+    companyName: 'Chennai Digital Media',
+    companyDescription: 'We help local businesses run Meta Ads, set up WhatsApp chat tools, and build active websites.',
+    valueProposition: 'Getting more local inquiries and phone calls for your business using Instagram Ads and WhatsApp outreach.'
   });
 
   // Load from local storage
@@ -31,7 +27,6 @@ export default function App() {
     if (savedLeads) {
       setLeads(JSON.parse(savedLeads));
     } else {
-      // Load initial empty list or mock
       setLeads([]);
     }
 
@@ -51,10 +46,10 @@ export default function App() {
     localStorage.setItem('leads_ai_data', JSON.stringify(updatedLeads));
   };
 
-  // State action handlers
+  // State action handlers using plain names
   const handleAddLead = (newLead) => {
-    // Check if lead already exists by email
-    if (leads.some(l => l.email === newLead.email && l.companyName === newLead.companyName)) {
+    // Prevent duplicate entries
+    if (leads.some(l => l.companyName.toLowerCase() === newLead.companyName.toLowerCase())) {
       return;
     }
     const updated = [...leads, newLead];
@@ -64,21 +59,10 @@ export default function App() {
   const handleDeleteLead = (leadId) => {
     const updated = leads.filter(l => l.id !== leadId);
     saveLeadsToStorage(updated);
-    if (selectedLeadForOutreach?.id === leadId) {
-      setSelectedLeadForOutreach(null);
-    }
   };
 
-  const handleUpdateLeadStage = (leadId, newStage) => {
-    const updated = leads.map(l => l.id === leadId ? { ...l, status: newStage } : l);
-    saveLeadsToStorage(updated);
-    if (selectedLeadForOutreach?.id === leadId) {
-      setSelectedLeadForOutreach(prev => ({ ...prev, status: newStage }));
-    }
-  };
-
-  const handleUpdateLeadAI = (leadId, aiScore) => {
-    const updated = leads.map(l => l.id === leadId ? { ...l, aiScore } : l);
+  const handleUpdateLeadField = (leadId, fieldName, fieldValue) => {
+    const updated = leads.map(l => l.id === leadId ? { ...l, [fieldName]: fieldValue } : l);
     saveLeadsToStorage(updated);
   };
 
@@ -87,98 +71,73 @@ export default function App() {
     localStorage.setItem('leads_ai_settings', JSON.stringify(newSettings));
   };
 
-  // Load High-Fidelity Demo Data
+  // Load digital marketing demo data matching your 8 columns
   const handleLoadDemoData = () => {
     const demoLeads = [
       {
         id: 'demo_1',
-        companyName: 'Quantum SaaS Technologies',
-        contactName: 'Robert Chen',
-        email: 'r.chen@quantumsaas.io',
-        website: 'www.quantumsaas.io',
-        industry: 'SaaS / Tech',
-        location: 'San Francisco, CA',
-        status: 'qualified',
-        source: 'Demo Pipeline',
-        createdAt: new Date(Date.now() - 3600000 * 24 * 3).toISOString(), // 3 days ago
-        aiScore: {
-          score: 92,
-          tier: 'A',
-          painPoints: ['Developer recruitment friction', 'High client onboarding churn', 'API performance degradation'],
-          analysis: 'Excellent match. The company is actively building security tech, aligned directly with custom React development and dashboard automation. Budget availability is high.'
-        }
+        companyName: 'HB Construction Chennai',
+        contactNumber: 'WhatsApp: +91 98401 54321 / Mobile: +91 94440 98765',
+        websiteStatus: 'Active website',
+        websiteUrl: 'www.hbconstructionchennai.com',
+        instagramLink: 'instagram.com/hbconstruction_chennai',
+        facebookLink: 'facebook.com/hbconstructionchennai',
+        metaAdsStatus: 'Active',
+        instagramFollowers: '2,850 followers',
+        businessType: 'Construction Company',
+        createdAt: new Date(Date.now() - 3600000 * 24 * 3).toISOString()
       },
       {
         id: 'demo_2',
-        companyName: 'Bright Smiles Dental Care',
-        contactName: 'Dr. Amanda Ross',
-        email: 'amanda@brightsmiles.care',
-        website: 'www.brightsmiles.care',
-        industry: 'Dental Clinics',
-        location: 'Boston, MA',
-        status: 'contacted',
-        source: 'Demo Pipeline',
-        createdAt: new Date(Date.now() - 3600000 * 24).toISOString(), // 1 day ago
-        aiScore: {
-          score: 84,
-          tier: 'B',
-          painPoints: ['Patient booking drop-offs', 'High manual appointment followups', 'Inefficient staff scheduling'],
-          analysis: 'Strong fit for custom web integration. Dr. Ross manages 2 office locations looking to implement patient text reminders and online confirmation dashboards. Good budget capacity.'
-        }
+        companyName: 'Deepam Bridal Boutique',
+        contactNumber: 'WhatsApp: +91 98840 12345 / Mobile: +91 90030 54321',
+        websiteStatus: 'Have website but inactive',
+        websiteUrl: 'www.deepambridal.com',
+        instagramLink: 'instagram.com/deepam_bridal_chennai',
+        facebookLink: 'facebook.com/deepambridal',
+        metaAdsStatus: 'Have page but inactive ads or no ads',
+        instagramFollowers: '24,500 followers',
+        businessType: 'Bridal Shop & Boutique',
+        createdAt: new Date(Date.now() - 3600000 * 24).toISOString()
       },
       {
         id: 'demo_3',
-        companyName: 'Velo E-Commerce Brands',
-        contactName: 'Tyler Miller',
-        email: 'tyler.m@veloshops.com',
-        website: 'www.veloshops.com',
-        industry: 'E-commerce Brands',
-        location: 'Remote',
-        status: 'new',
-        source: 'Demo Pipeline',
-        createdAt: new Date(Date.now() - 3600000 * 12).toISOString(), // 12 hours ago
-        aiScore: {
-          score: 76,
-          tier: 'B',
-          painPoints: ['Shopping cart abandonment rate', 'Manual wholesale orders processing', 'Inventory sync latency'],
-          analysis: 'Moderate to high fit. Online cycling retailer experiencing substantial order scale but bogged down by manual data entry between Shopify and QuickBooks. Ready for custom automation.'
-        }
+        companyName: 'Studio 3 Architects',
+        contactNumber: 'WhatsApp: +91 98410 87654 / Mobile: +91 98845 11223',
+        websiteStatus: 'Active website',
+        websiteUrl: 'www.studio3architects.in',
+        instagramLink: 'instagram.com/studio3_architects',
+        facebookLink: 'facebook.com/studio3architects',
+        metaAdsStatus: 'Active',
+        instagramFollowers: '8,900 followers',
+        businessType: 'Architectural Firm',
+        createdAt: new Date(Date.now() - 3600000 * 12).toISOString()
       },
       {
         id: 'demo_4',
-        companyName: 'Apex Digital Agency',
-        contactName: 'Chloe Vance',
-        email: 'chloe@apexagency.co',
-        website: 'www.apexagency.co',
-        industry: 'Digital Agencies',
-        location: 'London, UK',
-        status: 'in-progress',
-        source: 'Demo Pipeline',
-        createdAt: new Date(Date.now() - 3600000 * 2).toISOString(), // 2 hours ago
-        aiScore: {
-          score: 68,
-          tier: 'C',
-          painPoints: ['Client report compilation time', 'Prospect pitch mockups creation', 'High contractor margins'],
-          analysis: 'Boutique agency managing local client campaigns. Highly interested in dashboard automation to save manual tracking sheets, but has a tighter development budget.'
-        }
+        companyName: 'Anjappar Chennai Food',
+        contactNumber: 'WhatsApp: +91 94444 77889 / Mobile: +91 98409 66778',
+        websiteStatus: 'Active website',
+        websiteUrl: 'www.anjapparchennai.com',
+        instagramLink: 'instagram.com/anjappar_restaurant',
+        facebookLink: 'facebook.com/anjapparrestaurant',
+        metaAdsStatus: 'Have page but inactive ads or no ads',
+        instagramFollowers: '15,200 followers',
+        businessType: 'Food & Restaurant',
+        createdAt: new Date(Date.now() - 3600000 * 2).toISOString()
       },
       {
         id: 'demo_5',
-        companyName: 'Horizon Homes Real Estate',
-        contactName: 'Marcus Sterling',
-        email: 'marcus@horizonhomes.net',
-        website: 'www.horizonhomes.net',
-        industry: 'Real Estate Brokers',
-        location: 'Miami, FL',
-        status: 'closed',
-        source: 'Demo Pipeline',
-        createdAt: new Date(Date.now() - 3600000 * 48).toISOString(), // 2 days ago
-        aiScore: {
-          score: 88,
-          tier: 'A',
-          painPoints: ['Zillow lead routing latency', 'Agent performance analytics gaps', 'CRM manual sync errors'],
-          analysis: 'Outstanding opportunity. Large brokerage office with 35 active agents. Experiencing deal leakage due to slow response times on internet portal leads. Needs instant routing automation.'
-        }
+        companyName: 'Chennai Decorators',
+        contactNumber: 'WhatsApp: +91 90031 99001 / Mobile: +91 94450 55667',
+        websiteStatus: 'No website',
+        websiteUrl: '',
+        instagramLink: 'instagram.com/chennai_decorators',
+        facebookLink: 'no page',
+        metaAdsStatus: 'No page no ads',
+        instagramFollowers: '950 followers',
+        businessType: 'Interior Designer',
+        createdAt: new Date(Date.now() - 3600000 * 48).toISOString()
       }
     ];
     saveLeadsToStorage(demoLeads);
@@ -186,13 +145,12 @@ export default function App() {
 
   // Clear Database
   const handleClearData = () => {
-    if (confirm("Are you sure you want to delete all leads from your local database? This cannot be undone.")) {
+    if (confirm("Are you sure you want to delete all businesses from your excel sheet? This cannot be undone.")) {
       saveLeadsToStorage([]);
-      setSelectedLeadForOutreach(null);
     }
   };
 
-  // View Switcher logic
+  // Switch views
   const renderView = () => {
     switch (view) {
       case 'dashboard':
@@ -203,20 +161,9 @@ export default function App() {
             leads={leads}
             onAddLead={handleAddLead}
             onDeleteLead={handleDeleteLead}
-            onUpdateLeadStage={handleUpdateLeadStage}
-            onUpdateLeadAI={handleUpdateLeadAI}
+            onUpdateLeadField={handleUpdateLeadField}
             settings={settings}
             setView={setView}
-            setSelectedLeadForOutreach={setSelectedLeadForOutreach}
-          />
-        );
-      case 'kanban':
-        return (
-          <Kanban
-            leads={leads}
-            onUpdateLeadStage={handleUpdateLeadStage}
-            setView={setView}
-            setSelectedLeadForOutreach={setSelectedLeadForOutreach}
           />
         );
       case 'prospector':
@@ -224,17 +171,6 @@ export default function App() {
           <Prospector
             settings={settings}
             onAddLead={handleAddLead}
-            leads={leads}
-          />
-        );
-      case 'outreach':
-        return (
-          <Outreach
-            leads={leads}
-            selectedLead={selectedLeadForOutreach}
-            onSelectLead={setSelectedLeadForOutreach}
-            settings={settings}
-            onUpdateLeadStage={handleUpdateLeadStage}
           />
         );
       case 'settings':
@@ -274,38 +210,20 @@ export default function App() {
           </li>
           <li>
             <div 
+              onClick={() => setView('prospector')} 
+              className={`nav-item ${view === 'prospector' ? 'active' : ''}`}
+            >
+              <Search size={18} />
+              <span className="nav-text">Research Desk</span>
+            </div>
+          </li>
+          <li>
+            <div 
               onClick={() => setView('leads')} 
               className={`nav-item ${view === 'leads' ? 'active' : ''}`}
             >
               <Database size={18} />
-              <span className="nav-text">Leads Database</span>
-            </div>
-          </li>
-          <li>
-            <div 
-              onClick={() => setView('kanban')} 
-              className={`nav-item ${view === 'kanban' ? 'active' : ''}`}
-            >
-              <KanbanIcon size={18} />
-              <span className="nav-text">Kanban Pipeline</span>
-            </div>
-          </li>
-          <li>
-            <div 
-              onClick={() => setView('prospector')} 
-              className={`nav-item ${view === 'prospector' ? 'active' : ''}`}
-            >
-              <Sparkles size={18} />
-              <span className="nav-text">AI Prospector</span>
-            </div>
-          </li>
-          <li>
-            <div 
-              onClick={() => setView('outreach')} 
-              className={`nav-item ${view === 'outreach' ? 'active' : ''}`}
-            >
-              <Send size={18} />
-              <span className="nav-text">AI Outreach</span>
+              <span className="nav-text">Leads Table</span>
             </div>
           </li>
           <li>
