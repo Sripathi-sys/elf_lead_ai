@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { 
-  Search, Plus, Download, Upload, Trash2, Eye, 
+import {
+  Search, Plus, Download, Upload, Trash2, Eye,
   ArrowUpDown, ExternalLink, X, AlertCircle
 } from 'lucide-react';
 
-export default function LeadTable({ 
-  leads, onAddLead, onDeleteLead, onUpdateLeadField, setView 
+export default function LeadTable({
+  leads, onAddLead, onDeleteLead, onUpdateLeadField, setView
 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [websiteFilter, setWebsiteFilter] = useState('all');
@@ -34,7 +34,7 @@ export default function LeadTable({
 
   const handleAddSubmit = (e) => {
     e.preventDefault();
-    
+
     const leadItem = {
       ...newLead,
       id: 'lead_' + Date.now(),
@@ -59,17 +59,17 @@ export default function LeadTable({
   // CSV Export structured specifically for Excel
   const handleExportCSV = () => {
     if (leads.length === 0) return;
-    
+
     // Exact 8 headers requested
     const headers = [
-      'Company Name', 
-      'WhatsApp and Mobile Number', 
-      'Website Status', 
+      'Company Name',
+      'WhatsApp and Mobile Number',
+      'Website Status',
       'Website Link',
-      'Instagram Link', 
-      'Facebook Page Link', 
-      'Meta Ads Status', 
-      'Instagram Followers', 
+      'Instagram Link',
+      'Facebook Page Link',
+      'Meta Ads Status',
+      'Instagram Followers',
       'Business Type'
     ];
 
@@ -87,10 +87,10 @@ export default function LeadTable({
 
     // Use BOM (Byte Order Mark) so Excel opens UTF-8 characters (like +91) correctly
     const csvContent = "\uFEFF" + [
-      headers.join(','), 
+      headers.join(','),
       ...rows.map(e => e.map(val => `"${val.replace(/"/g, '""')}"`).join(","))
     ].join("\n");
-    
+
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -113,7 +113,7 @@ export default function LeadTable({
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
-      
+
       const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(',');
       if (matches.length < 3) continue;
 
@@ -152,7 +152,7 @@ export default function LeadTable({
   const filteredLeads = leads.filter(lead => {
     const searchString = `${lead.companyName} ${lead.contactNumber} ${lead.businessType} ${lead.instagramLink} ${lead.instagramFollowers}`.toLowerCase();
     const matchesSearch = searchString.includes(searchTerm.toLowerCase());
-    
+
     // Website filter matches
     let matchesWebsite = true;
     if (websiteFilter !== 'all') {
@@ -164,12 +164,12 @@ export default function LeadTable({
     if (adsFilter !== 'all') {
       matchesAds = lead.metaAdsStatus === adsFilter;
     }
-    
+
     return matchesSearch && matchesWebsite && matchesAds;
   }).sort((a, b) => {
     let aVal = a[sortField] || '';
     let bVal = b[sortField] || '';
-    
+
     if (aVal < bVal) return sortAsc ? -1 : 1;
     if (aVal > bVal) return sortAsc ? 1 : -1;
     return 0;
@@ -214,10 +214,10 @@ export default function LeadTable({
         </div>
 
         <div style={{ display: 'flex', gap: '12px' }}>
-          <select 
-            value={websiteFilter} 
+          <select
+            value={websiteFilter}
             onChange={(e) => setWebsiteFilter(e.target.value)}
-            className="glass-input" 
+            className="glass-input"
             style={{ width: '170px', cursor: 'pointer' }}
           >
             <option value="all">All Websites</option>
@@ -226,10 +226,10 @@ export default function LeadTable({
             <option value="No website">No website</option>
           </select>
 
-          <select 
-            value={adsFilter} 
+          <select
+            value={adsFilter}
             onChange={(e) => setAdsFilter(e.target.value)}
-            className="glass-input" 
+            className="glass-input"
             style={{ width: '170px', cursor: 'pointer' }}
           >
             <option value="all">All Ads Statuses</option>
@@ -350,8 +350,8 @@ export default function LeadTable({
           <>
             <div className="drawer-header">
               <h2 style={{ fontSize: '1.25rem', fontWeight: '800' }}>Company Details</h2>
-              <button 
-                onClick={() => setSelectedLead(null)} 
+              <button
+                onClick={() => setSelectedLead(null)}
                 className="btn btn-secondary btn-icon"
                 style={{ borderRadius: '50%' }}
               >
@@ -414,177 +414,177 @@ export default function LeadTable({
               </div>
             </>
           )}
+          </div>
+
+        {/* Add Lead Modal - Simple English */}
+        {isAddModalOpen && (
+          <div className="modal-overlay" onClick={() => setIsAddModalOpen(false)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div style={{ display: 'flex', justifyBetween: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: '800' }}>Add Business Manually</h2>
+                <button onClick={() => setIsAddModalOpen(false)} className="btn btn-secondary btn-icon" style={{ borderRadius: '50%' }}>
+                  <X size={16} />
+                </button>
+              </div>
+              <form onSubmit={handleAddSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Company Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={newLead.companyName}
+                    onChange={(e) => setNewLead({ ...newLead, companyName: e.target.value })}
+                    placeholder="e.g. HB Construction Chennai"
+                    className="form-control"
+                  />
+                </div>
+
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">WhatsApp & Mobile Number</label>
+                  <input
+                    type="text"
+                    required
+                    value={newLead.contactNumber}
+                    onChange={(e) => setNewLead({ ...newLead, contactNumber: e.target.value })}
+                    placeholder="e.g. WhatsApp: +91 98401 54321 / Mobile: +91 94440 98765"
+                    className="form-control"
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label">Website Status</label>
+                    <select
+                      value={newLead.websiteStatus}
+                      onChange={(e) => setNewLead({ ...newLead, websiteStatus: e.target.value })}
+                      className="form-control"
+                    >
+                      <option value="Active website">Active website</option>
+                      <option value="Have website but inactive">Have website but inactive</option>
+                      <option value="No website">No website</option>
+                    </select>
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label">Website Link</label>
+                    <input
+                      type="text"
+                      value={newLead.websiteUrl}
+                      onChange={(e) => setNewLead({ ...newLead, websiteUrl: e.target.value })}
+                      placeholder="e.g. www.hbc.com"
+                      className="form-control"
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label">Instagram Link</label>
+                    <input
+                      type="text"
+                      value={newLead.instagramLink}
+                      onChange={(e) => setNewLead({ ...newLead, instagramLink: e.target.value })}
+                      placeholder="instagram.com/handle"
+                      className="form-control"
+                    />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label">Instagram Followers</label>
+                    <input
+                      type="text"
+                      value={newLead.instagramFollowers}
+                      onChange={(e) => setNewLead({ ...newLead, instagramFollowers: e.target.value })}
+                      placeholder="e.g. 2,400 followers"
+                      className="form-control"
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label">Facebook Page Link</label>
+                    <input
+                      type="text"
+                      value={newLead.facebookLink}
+                      onChange={(e) => setNewLead({ ...newLead, facebookLink: e.target.value })}
+                      placeholder="facebook.com/page (or no page)"
+                      className="form-control"
+                    />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label">Ads Status (Meta Ads)</label>
+                    <select
+                      value={newLead.metaAdsStatus}
+                      onChange={(e) => setNewLead({ ...newLead, metaAdsStatus: e.target.value })}
+                      className="form-control"
+                    >
+                      <option value="Active">Active</option>
+                      <option value="Have page but inactive ads or no ads">Have page but inactive ads or no ads</option>
+                      <option value="No page no ads">No page no ads</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Business Type / Category</label>
+                  <input
+                    type="text"
+                    required
+                    value={newLead.businessType}
+                    onChange={(e) => setNewLead({ ...newLead, businessType: e.target.value })}
+                    placeholder="e.g. Construction Company, Bridal Studio"
+                    className="form-control"
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+                  <button type="button" onClick={() => setIsAddModalOpen(false)} className="btn btn-secondary" style={{ flexGrow: 1 }}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-primary" style={{ flexGrow: 1 }}>
+                    Save Business
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Import Modal */}
+        {isImportModalOpen && (
+          <div className="modal-overlay" onClick={() => setIsImportModalOpen(false)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div style={{ display: 'flex', justifyBetween: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: '800' }}>Import Businesses</h2>
+                <button onClick={() => setIsImportModalOpen(false)} className="btn btn-secondary btn-icon" style={{ borderRadius: '50%' }}>
+                  <X size={16} />
+                </button>
+              </div>
+              <form onSubmit={handleImportSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                  Paste comma-separated CSV rows below. Headers must match:<br />
+                  <code>companyName,contactNumber,websiteStatus,websiteUrl,instagramLink,facebookLink,metaAdsStatus,instagramFollowers,businessType</code>
+                </p>
+                <textarea
+                  className="form-control"
+                  rows={8}
+                  value={importText}
+                  onChange={(e) => setImportText(e.target.value)}
+                  placeholder="HB Construction,WhatsApp: +91 984...,Active website,www.hbc.com,instagram.com/hbc,facebook.com/hbc,Active,2800 followers,Construction Company"
+                  required
+                  style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
+                />
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button type="button" onClick={() => setIsImportModalOpen(false)} className="btn btn-secondary" style={{ flexGrow: 1 }}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-primary" style={{ flexGrow: 1 }}>
+                    Import Data
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
-
-      {/* Add Lead Modal - Simple English */}
-      {isAddModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsAddModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyBetween: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: '800' }}>Add Business Manually</h2>
-              <button onClick={() => setIsAddModalOpen(false)} className="btn btn-secondary btn-icon" style={{ borderRadius: '50%' }}>
-                <X size={16} />
-              </button>
-            </div>
-            <form onSubmit={handleAddSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">Company Name</label>
-                <input
-                  type="text"
-                  required
-                  value={newLead.companyName}
-                  onChange={(e) => setNewLead({ ...newLead, companyName: e.target.value })}
-                  placeholder="e.g. HB Construction Chennai"
-                  className="form-control"
-                />
-              </div>
-
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">WhatsApp & Mobile Number</label>
-                <input
-                  type="text"
-                  required
-                  value={newLead.contactNumber}
-                  onChange={(e) => setNewLead({ ...newLead, contactNumber: e.target.value })}
-                  placeholder="e.g. WhatsApp: +91 98401 54321 / Mobile: +91 94440 98765"
-                  className="form-control"
-                />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Website Status</label>
-                  <select
-                    value={newLead.websiteStatus}
-                    onChange={(e) => setNewLead({ ...newLead, websiteStatus: e.target.value })}
-                    className="form-control"
-                  >
-                    <option value="Active website">Active website</option>
-                    <option value="Have website but inactive">Have website but inactive</option>
-                    <option value="No website">No website</option>
-                  </select>
-                </div>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Website Link</label>
-                  <input
-                    type="text"
-                    value={newLead.websiteUrl}
-                    onChange={(e) => setNewLead({ ...newLead, websiteUrl: e.target.value })}
-                    placeholder="e.g. www.hbc.com"
-                    className="form-control"
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Instagram Link</label>
-                  <input
-                    type="text"
-                    value={newLead.instagramLink}
-                    onChange={(e) => setNewLead({ ...newLead, instagramLink: e.target.value })}
-                    placeholder="instagram.com/handle"
-                    className="form-control"
-                  />
-                </div>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Instagram Followers</label>
-                  <input
-                    type="text"
-                    value={newLead.instagramFollowers}
-                    onChange={(e) => setNewLead({ ...newLead, instagramFollowers: e.target.value })}
-                    placeholder="e.g. 2,400 followers"
-                    className="form-control"
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Facebook Page Link</label>
-                  <input
-                    type="text"
-                    value={newLead.facebookLink}
-                    onChange={(e) => setNewLead({ ...newLead, facebookLink: e.target.value })}
-                    placeholder="facebook.com/page (or no page)"
-                    className="form-control"
-                  />
-                </div>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Ads Status (Meta Ads)</label>
-                  <select
-                    value={newLead.metaAdsStatus}
-                    onChange={(e) => setNewLead({ ...newLead, metaAdsStatus: e.target.value })}
-                    className="form-control"
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Have page but inactive ads or no ads">Have page but inactive ads or no ads</option>
-                    <option value="No page no ads">No page no ads</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">Business Type / Category</label>
-                <input
-                  type="text"
-                  required
-                  value={newLead.businessType}
-                  onChange={(e) => setNewLead({ ...newLead, businessType: e.target.value })}
-                  placeholder="e.g. Construction Company, Bridal Studio"
-                  className="form-control"
-                />
-              </div>
-
-              <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
-                <button type="button" onClick={() => setIsAddModalOpen(false)} className="btn btn-secondary" style={{ flexGrow: 1 }}>
-                  Cancel
-                </button>
-                <button type="submit" className="btn btn-primary" style={{ flexGrow: 1 }}>
-                  Save Business
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Import Modal */}
-      {isImportModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsImportModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyBetween: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: '800' }}>Import Businesses</h2>
-              <button onClick={() => setIsImportModalOpen(false)} className="btn btn-secondary btn-icon" style={{ borderRadius: '50%' }}>
-                <X size={16} />
-              </button>
-            </div>
-            <form onSubmit={handleImportSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-                Paste comma-separated CSV rows below. Headers must match:<br />
-                <code>companyName,contactNumber,websiteStatus,websiteUrl,instagramLink,facebookLink,metaAdsStatus,instagramFollowers,businessType</code>
-              </p>
-              <textarea
-                className="form-control"
-                rows={8}
-                value={importText}
-                onChange={(e) => setImportText(e.target.value)}
-                placeholder="HB Construction,WhatsApp: +91 984...,Active website,www.hbc.com,instagram.com/hbc,facebook.com/hbc,Active,2800 followers,Construction Company"
-                required
-                style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
-              />
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button type="button" onClick={() => setIsImportModalOpen(false)} className="btn btn-secondary" style={{ flexGrow: 1 }}>
-                  Cancel
-                </button>
-                <button type="submit" className="btn btn-primary" style={{ flexGrow: 1 }}>
-                  Import Data
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+      );
 }
