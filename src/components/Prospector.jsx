@@ -219,6 +219,18 @@ export default function Prospector({ settings, onAddLead }) {
                     </p>
                   </div>
                 </div>
+
+                {result.stepByStepAnalysis && (
+                  <div style={{ gridColumn: 'span 2', background: 'rgba(37,99,235,0.03)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <h4 style={{ fontSize: '0.85rem', fontWeight: '800', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <ShieldCheck size={16} />
+                      AI Step-by-Step Logic Thinking Verification
+                    </h4>
+                    <p style={{ fontSize: '0.84rem', lineHeight: '1.5', color: 'var(--text-secondary)', whiteSpace: 'pre-wrap' }}>
+                      {result.stepByStepAnalysis}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           )}

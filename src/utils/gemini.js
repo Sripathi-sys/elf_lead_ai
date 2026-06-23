@@ -117,7 +117,8 @@ export async function researchCompany(apiKey, query) {
     metaAdsStatus: adsStatus,
     instagramFollowers: followers,
     businessType: detectedType,
-    location: "Chennai, Tamil Nadu"
+    location: "Chennai, Tamil Nadu",
+    stepByStepAnalysis: "Step-by-step logic thinking verification completed (Offline simulated)."
   };
 
   if (!apiKey) {
@@ -161,6 +162,12 @@ Verification Rules & Search Pipeline:
    - Use the Instagram username/handle to search the Meta Ads Library. Identify if there are active ads associated with that handle, and label Meta Ads Status accordingly ("Active", "Have page but inactive ads or no ads", or "No page no ads").
 7. Business Location: Find the specific area, street, or neighborhood where the business operates in Tamil Nadu (e.g. "Avadi, Chennai" or "T. Nagar, Chennai").
 
+Step-by-Step Logic Thinking requirement:
+Write a comprehensive step-by-step logic thinking analysis in the "stepByStepAnalysis" field explaining:
+- How you found and verified the website URL (confirming it is active or down/inactive).
+- How you found the Facebook link and verified that the logo/name matches the business branding.
+- How you compared the phone numbers found in the Instagram bio, posts, and website to determine the correct WhatsApp/mobile numbers.
+
 Search criteria and definitions:
 1. Company Name: The official clean brand or business name (e.g. "EKS Construction Chennai").
 2. WhatsApp and Mobile Number: Extract active contact numbers following the verification pipeline. Format as "WhatsApp: [number] / Mobile: [number]".
@@ -172,6 +179,7 @@ Search criteria and definitions:
 8. Instagram Followers: Retrieve or closely estimate their actual follower count (e.g., "2.8k followers").
 9. Business Type / Category: The type of business (e.g., "Construction Company").
 10. Business Location: The specific area/locality of the business in Tamil Nadu (e.g., "Avadi, Chennai").
+11. Step-by-Step Logic thinking: Write your full logic reasoning steps for verifying URLs, websites, and numbers.
 
 Return ONLY a valid JSON object matching this structure:
 {
@@ -184,7 +192,8 @@ Return ONLY a valid JSON object matching this structure:
   "metaAdsStatus": "Active" | "Have page but inactive ads or no ads" | "No page no ads",
   "instagramFollowers": "string",
   "businessType": "string",
-  "location": "string"
+  "location": "string",
+  "stepByStepAnalysis": "string"
 }`;
 
   try {
