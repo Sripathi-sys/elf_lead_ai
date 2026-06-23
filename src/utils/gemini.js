@@ -15,6 +15,11 @@ async function callGemini(apiKey, prompt, jsonMode = false) {
         parts: [{ text: prompt }]
       }
     ],
+    tools: [
+      {
+        google_search: {}
+      }
+    ],
     generationConfig: jsonMode ? {
       responseMimeType: "application/json"
     } : {}
@@ -121,22 +126,22 @@ export async function researchCompany(apiKey, query) {
   }
 
   const prompt = `You are a professional digital marketing research assistant.
-Research the following business query: "${query}"
+Research the following business query by searching the web: "${query}"
 
-Find or deduce accurate, realistic B2B lead details for this query based on internet data.
+Use Google Search grounding to find real-world business details. Do NOT guess or make up URLs, social media links, or contact numbers. If a detail cannot be found in Google Search results, return "no page" or appropriate placeholder text.
+
 Search criteria and definitions:
-1. Company Name (extract the clean brand/business name, e.g., "HB Construction Chennai")
-2. WhatsApp and Mobile Number (find contact numbers for owner or manager, formatting as "WhatsApp: [number] / Mobile: [number]")
-3. Website Status (must be precisely one of: "Active website", "Have website but inactive", or "No website"). Define inactive as having a domain but the site is down, broken, or has hosting errors.
-4. Website URL (include URL link if website exists)
-5. Business Instagram Link (e.g. instagram.com/[username])
-6. Business Facebook Page Link (link to page, or put "no page" if none exists)
-7. Meta Ads Status (must be precisely one of: "Active" if running ads, "Have page but inactive ads or no ads" if page exists but no ads are running, or "No page no ads")
-8. Instagram Followers (estimate or retrieve follower count, e.g., "12.5k followers" or "4,200 followers")
-9. Business Type / Category (e.g., construction company, bridal shop, architect, restaurant)
+1. Company Name: The official clean brand or business name (e.g. "HB Construction Chennai").
+2. WhatsApp and Mobile Number: Search for real, active contact numbers on their official website, Facebook, or Instagram page. Format as "WhatsApp: [number] / Mobile: [number]". If no contact number exists in search results, return "Not found".
+3. Website Status: Perform a real search. Must be precisely one of: "Active website", "Have website but inactive", or "No website". Define "Have website but inactive" if they have a registered domain name but the site has hosting errors, database connection errors, is under construction, down, or not opening.
+4. Website URL: The exact, clean domain/URL if it exists (e.g., "hbconstruction.com").
+5. Business Instagram Link: Find the real Instagram profile link (e.g., "instagram.com/hbconstruction_chennai"). If none exists, write "no page".
+6. Business Facebook Page Link: Find the real Facebook page link (e.g., "facebook.com/hbconstructionchennai"). If none exists, write "no page".
+7. Meta Ads Status: Determine if they run ads on Meta Ads Library/Registry. Must be precisely one of: "Active" (if currently running ads), "Have page but inactive ads or no ads" (if Facebook/Instagram page exists but no ads are running), or "No page no ads".
+8. Instagram Followers: Retrieve or closely estimate their actual follower count (e.g., "2.8k followers").
+9. Business Type / Category: The type of business (e.g., "Construction Company").
 
-Return ONLY a valid JSON object. Do not include markdown formatting like \`\`\`json.
-Make sure the JSON keys match these fields exactly:
+Return ONLY a valid JSON object matching this structure:
 {
   "companyName": "string",
   "contactNumber": "string",

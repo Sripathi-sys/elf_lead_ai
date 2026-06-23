@@ -108,24 +108,31 @@ export default function Prospector({ settings, onAddLead }) {
                   <h3 style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--text-primary)' }}>{result.companyName}</h3>
                   <span className="badge badge-score-a" style={{ marginTop: '6px' }}>{result.businessType}</span>
                 </div>
-                <button
-                  onClick={handleSaveToExcel}
-                  className={`btn ${isAdded ? 'btn-secondary' : 'btn-primary'}`}
-                  style={isAdded ? { borderColor: 'var(--success)', color: 'var(--success)' } : {}}
-                  disabled={isAdded}
-                >
-                  {isAdded ? (
-                    <>
-                      <Check size={16} />
-                      Added to Excel
-                    </>
-                  ) : (
-                    <>
-                      <Database size={16} />
-                      Add to Excel Table
-                    </>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+                  <button
+                    onClick={handleSaveToExcel}
+                    className={`btn ${isAdded ? 'btn-secondary' : 'btn-primary'}`}
+                    style={isAdded ? { borderColor: 'var(--success)', color: 'var(--success)' } : {}}
+                    disabled={isAdded}
+                  >
+                    {isAdded ? (
+                      <>
+                        <Check size={16} />
+                        Added to Excel
+                      </>
+                    ) : (
+                      <>
+                        <Database size={16} />
+                        Add to Excel Table
+                      </>
+                    )}
+                  </button>
+                  {isAdded && (
+                    <span style={{ fontSize: '0.78rem', color: 'var(--success)', fontWeight: '600', maxWidth: '240px', textAlign: 'right' }}>
+                      ✓ Added! Find or export this under the <b>Leads Table</b> tab on the left.
+                    </span>
                   )}
-                </button>
+                </div>
               </div>
 
               <hr style={{ border: 'none', borderTop: '1px solid var(--border)' }} />
