@@ -138,16 +138,21 @@ Target Location Context: Chennai / Tamil Nadu, India. Ensure all retrieved socia
 
 Use Google Search grounding to find real-world business details. Do NOT guess, hallucinate, or make up URLs, social media links, or contact numbers.
 
-Verification Rules:
-1. Contact Number Consistency: Verify the phone numbers across their website, Instagram bio, and Facebook page. Ensure the number is correct and matches across all sources. If multiple numbers exist, format as "WhatsApp: [number] / Mobile: [number]".
-2. Logo & Branding Verification: Verify the profile logo on Facebook and Instagram matches the official business logo/branding. If they do not match, or it appears to be an unrelated page, write "no page".
-3. Business Location: Find the specific area, street, or neighborhood where the business operates in Chennai/Tamil Nadu (e.g. "T. Nagar, Chennai" or "Adyar, Chennai").
+Verification Rules & Pipeline:
+1. Chronological Lookup Order:
+   - Step A: Find the business's official Instagram profile page link first.
+   - Step B: Look directly in that Instagram profile bio for the website link (URL).
+   - Step C: Extract and save that specific website URL as the official website link.
+   - Step D: Search for and open that website to extract the active WhatsApp and mobile contact numbers.
+2. Contact Number Extraction: Prioritize phone numbers found on the website linked in the Instagram bio. If none exist there, pull them from the Instagram bio itself. Format as "WhatsApp: [number] / Mobile: [number]". If no numbers exist on these pages, write "Not found".
+3. Logo & Branding Verification: Verify the profile logo on Facebook and Instagram matches the official business branding/logo from their website. If it does not match, write "no page".
+4. Business Location: Find the neighborhood or area where the business is located in Chennai/Tamil Nadu (e.g., "T. Nagar, Chennai").
 
 Search criteria and definitions:
 1. Company Name: The official clean brand or business name (e.g. "HB Construction Chennai").
-2. WhatsApp and Mobile Number: Extract active contact numbers. Format as "WhatsApp: [number] / Mobile: [number]".
+2. WhatsApp and Mobile Number: Extract active contact numbers following the verification pipeline. Format as "WhatsApp: [number] / Mobile: [number]".
 3. Website Status: Must be precisely one of: "Active website", "Have website but inactive", or "No website". Define "Have website but inactive" if they have a domain but the site is down, under construction, or showing hosting errors.
-4. Website URL: The exact, clean domain/URL if it exists (e.g., "hbconstruction.com").
+4. Website URL: The exact website URL found in the Instagram bio (e.g., "hbconstruction.com").
 5. Business Instagram Link: Find the real Instagram profile link. If none exists, write "no page".
 6. Business Facebook Page Link: Find the real Facebook page link. Make sure the branding matches. If not, write "no page".
 7. Meta Ads Status: Determine if they run ads on Meta Ads Library. Must be precisely one of: "Active", "Have page but inactive ads or no ads", or "No page no ads".
