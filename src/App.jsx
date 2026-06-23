@@ -8,7 +8,7 @@ import Prospector from './components/Prospector';
 import Settings from './components/Settings';
 
 export default function App() {
-  const [view, setView] = useState('dashboard');
+  const [view, setView] = useState('prospector');
   const [leads, setLeads] = useState([]);
   
   // Default Settings Profile using simple English
@@ -201,20 +201,20 @@ export default function App() {
         <ul className="nav-links">
           <li>
             <div 
-              onClick={() => setView('dashboard')} 
-              className={`nav-item ${view === 'dashboard' ? 'active' : ''}`}
-            >
-              <LayoutDashboard size={18} />
-              <span className="nav-text">Dashboard</span>
-            </div>
-          </li>
-          <li>
-            <div 
               onClick={() => setView('prospector')} 
               className={`nav-item ${view === 'prospector' ? 'active' : ''}`}
             >
               <Search size={18} />
               <span className="nav-text">Research Desk</span>
+            </div>
+          </li>
+          <li>
+            <div 
+              onClick={() => setView('dashboard')} 
+              className={`nav-item ${view === 'dashboard' ? 'active' : ''}`}
+            >
+              <LayoutDashboard size={18} />
+              <span className="nav-text">Dashboard</span>
             </div>
           </li>
           <li>
