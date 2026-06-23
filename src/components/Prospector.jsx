@@ -48,6 +48,16 @@ export default function Prospector({ settings, onAddLead }) {
         </div>
       </div>
 
+      {!settings.apiKey && (
+        <div style={{ background: '#fffbeb', border: '1px solid #f59e0b', color: '#78350f', padding: '16px 20px', borderRadius: '12px', marginBottom: '24px', fontSize: '0.88rem', display: 'flex', alignItems: 'flex-start', gap: '10px', boxShadow: 'var(--shadow-sm)' }}>
+          <AlertCircle size={18} style={{ color: '#d97706', marginTop: '2px', flexShrink: 0 }} />
+          <div>
+            <span style={{ fontWeight: '700', display: 'block', marginBottom: '4px' }}>Offline Simulator Mode Active</span>
+            <span>No Gemini API Key was found in your settings. The app is currently showing simulated/mock placeholder data (like ".com" websites and generic phone numbers). Go to the <b>Settings</b> sidebar tab to enter your real Gemini API Key for active web lookup.</span>
+          </div>
+        </div>
+      )}
+
       <div className="prospector-container">
         {/* Input Panel */}
         <form onSubmit={handleSearch} className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '20px', height: 'fit-content' }}>
