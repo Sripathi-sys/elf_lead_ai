@@ -17,7 +17,7 @@ async function callGemini(apiKey, prompt, jsonMode = false) {
     ],
     tools: [
       {
-        google_search: {}
+        google_search_retrieval: {}
       }
     ],
     generationConfig: jsonMode ? {
@@ -219,6 +219,9 @@ Return ONLY a valid JSON object matching this structure:
     const cleanedJsonText = rawResult.replace(/```json/g, '').replace(/```/g, '').trim();
     return JSON.parse(cleanedJsonText);
   } catch (err) {
+    if (apiKey && apiKey !== 'YOUR_GEMINI_API_KEY_HERE') {
+      throw new Error(`AI Search lookup failed: ${err.message}. Ensure your API Key is correct.`);
+    }
     console.warn("Falling back to local research simulation.", err);
     await new Promise(resolve => setTimeout(resolve, 1000));
     return localFallback;
