@@ -11,9 +11,9 @@ export default function App() {
   const [view, setView] = useState('prospector');
   const [leads, setLeads] = useState([]);
   
-  // Default Settings Profile using simple English
+  // Default Settings Profile. Put your Gemini API key inside the quotes below if you want it hardcoded in code:
   const [settings, setSettings] = useState({
-    apiKey: import.meta.env.VITE_GEMINI_API_KEY || '',
+    apiKey: import.meta.env.VITE_GEMINI_API_KEY || 'YOUR_GEMINI_API_KEY_HERE',
     senderName: 'Sanjay Kumar',
     senderTitle: 'Marketing Manager',
     companyName: 'Chennai Digital Media',
