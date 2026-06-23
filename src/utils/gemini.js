@@ -136,28 +136,33 @@ export async function researchCompany(apiKey, query) {
 Research the following business: "${localizedSearch}"
 Target Location Context: Chennai / Tamil Nadu, India. Ensure all retrieved social links, phone numbers, and websites belong to the business in this region, not generic global names.
 
-Use Google Search grounding to find real-world business details. Do NOT guess, hallucinate, or make up URLs, social media links, or contact numbers.
+Use Google Search grounding to find real-world business details. Do NOT guess, extrapolate, or assume URL structures (e.g., do not guess that the website is ".com" or matches the handle name exactly, and do not guess the Facebook handle). You must search for them specifically to find the real links.
 
 Verification Rules & Search Pipeline:
-1. Local Context: The business MUST be located in Tamil Nadu, India only (e.g. Chennai, Coimbatore, Madurai, Trichy, Salem). Do not return details of matching businesses from other Indian states (like Karnataka or Maharashtra) or other countries.
-2. Instagram Bio First:
-   - First, find the official Instagram profile.
-   - Look directly in their Instagram bio for the website link (URL), Facebook page link, and contact number.
-   - If the website URL is NOT found in the Instagram bio, then perform a browser search to find the official website.
-3. Contact Number Verification Pipeline:
+1. Local Context: The business MUST be located in Tamil Nadu, India only (e.g. Chennai, Coimbatore, Madurai, Trichy, Salem). Do not return details of matching businesses from other states or countries.
+2. Instagram Handle Lookup Rule:
+   - If the search query is an Instagram handle/username (contains underscores like "eks_construction", or starts with "@"), you MUST execute specific search queries like:
+     * "[username] Instagram"
+     * "[username] website"
+     * "[username] Facebook"
+   - Look at the actual search results to find the correct website URL (for example, "eksconstruction.in" instead of a guessed ".com") and the correct Facebook page (for example, "facebook.com/eksconstruction").
+3. Instagram Bio First:
+   - Check the Instagram bio or search result snippets of their Instagram profile for the website link, Facebook link, and contact number.
+   - If the website URL is NOT found in the Instagram bio snippets, search Google for "[business name] website" to locate it.
+4. Contact Number Verification Pipeline:
    - First, check the Instagram bio for a phone number.
-   - Second, check their official website for a phone number.
-   - Third, look at recent Instagram posts to find phone numbers.
-   - Fourth, cross-check: Compare the phone number found on the website and the numbers in the Instagram posts. Verify if they are similar or the same to confirm consistency. Format as "WhatsApp: [number] / Mobile: [number]". If no numbers can be found or verified, return "Not found".
-4. Facebook Page Verification:
+   - Second, check their official website contact pages for phone numbers.
+   - Third, look at captions of recent Instagram posts to find phone numbers.
+   - Fourth, cross-check: Compare the phone number found on the website with the numbers in the Instagram posts. Verify if they are similar or the same to confirm consistency. Format as "WhatsApp: [number] / Mobile: [number]". If no numbers can be found or verified, return "Not found".
+5. Facebook Page Verification:
    - Check if the Facebook page link is present in the Instagram bio. If not, look up their Facebook page.
    - Verify the profile logo on the Facebook page matches the official website and Instagram profile branding. If the branding/logo does not match, write "no page".
-5. Meta Ads Library Search:
-   - Use the Instagram username/handle to search the Meta Ads Library. Identify if there are active ads or pages associated with that handle, and label Meta Ads Status accordingly ("Active", "Have page but inactive ads or no ads", or "No page no ads").
-6. Business Location: Find the specific area, street, or neighborhood where the business operates in Tamil Nadu (e.g. "T. Nagar, Chennai" or "RS Puram, Coimbatore").
+6. Meta Ads Status:
+   - Use the Instagram username/handle to search the Meta Ads Library. Identify if there are active ads associated with that handle, and label Meta Ads Status accordingly ("Active", "Have page but inactive ads or no ads", or "No page no ads").
+7. Business Location: Find the specific area, street, or neighborhood where the business operates in Tamil Nadu (e.g. "Avadi, Chennai" or "T. Nagar, Chennai").
 
 Search criteria and definitions:
-1. Company Name: The official clean brand or business name (e.g. "HB Construction Chennai").
+1. Company Name: The official clean brand or business name (e.g. "EKS Construction Chennai").
 2. WhatsApp and Mobile Number: Extract active contact numbers following the verification pipeline. Format as "WhatsApp: [number] / Mobile: [number]".
 3. Website Status: Must be precisely one of: "Active website", "Have website but inactive", or "No website". Define "Have website but inactive" if they have a domain but the site is down, under construction, or showing hosting errors.
 4. Website URL: The exact website URL found in the Instagram bio (if present), otherwise from the browser search.
@@ -166,7 +171,7 @@ Search criteria and definitions:
 7. Meta Ads Status: Determine if they run ads on Meta Ads Library. Must be precisely one of: "Active", "Have page but inactive ads or no ads", or "No page no ads".
 8. Instagram Followers: Retrieve or closely estimate their actual follower count (e.g., "2.8k followers").
 9. Business Type / Category: The type of business (e.g., "Construction Company").
-10. Business Location: The specific area/locality of the business in Tamil Nadu (e.g., "Anna Nagar, Chennai").
+10. Business Location: The specific area/locality of the business in Tamil Nadu (e.g., "Avadi, Chennai").
 
 Return ONLY a valid JSON object matching this structure:
 {
