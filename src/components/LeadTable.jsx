@@ -28,7 +28,8 @@ export default function LeadTable({
     facebookLink: '',
     metaAdsStatus: 'Active',
     instagramFollowers: '',
-    businessType: ''
+    businessType: '',
+    location: ''
   });
   const [importText, setImportText] = useState('');
 
@@ -52,7 +53,8 @@ export default function LeadTable({
       facebookLink: '',
       metaAdsStatus: 'Active',
       instagramFollowers: '',
-      businessType: ''
+      businessType: '',
+      location: ''
     });
   };
 
@@ -70,7 +72,8 @@ export default function LeadTable({
       'Facebook Page Link',
       'Meta Ads Status',
       'Instagram Followers',
-      'Business Type'
+      'Business Type',
+      'Location'
     ];
 
     const rows = leads.map(l => [
@@ -82,7 +85,8 @@ export default function LeadTable({
       l.facebookLink,
       l.metaAdsStatus,
       l.instagramFollowers,
-      l.businessType
+      l.businessType,
+      l.location || ''
     ]);
 
     // Use BOM (Byte Order Mark) so Excel opens UTF-8 characters (like +91) correctly
@@ -130,6 +134,7 @@ export default function LeadTable({
         metaAdsStatus: clean(matches[6]) || 'Active',
         instagramFollowers: clean(matches[7]) || '0 followers',
         businessType: clean(matches[8]) || 'Business',
+        location: clean(matches[9]) || 'Chennai, Tamil Nadu',
         createdAt: new Date().toISOString()
       });
     }
@@ -267,6 +272,9 @@ export default function LeadTable({
                   <th style={{ cursor: 'pointer' }} onClick={() => handleSort('businessType')}>
                     Type <ArrowUpDown size={12} style={{ marginLeft: '6px', display: 'inline' }} />
                   </th>
+                  <th style={{ cursor: 'pointer' }} onClick={() => handleSort('location')}>
+                    Location <ArrowUpDown size={12} style={{ marginLeft: '6px', display: 'inline' }} />
+                  </th>
                   <th style={{ textAlign: 'right' }}>Action</th>
                 </tr>
               </thead>
@@ -318,6 +326,7 @@ export default function LeadTable({
                     </td>
                     <td style={{ fontWeight: '600' }}>{lead.instagramFollowers}</td>
                     <td style={{ fontSize: '0.85rem' }}>{lead.businessType}</td>
+                    <td style={{ fontSize: '0.85rem', whiteSpace: 'nowrap' }}>{lead.location || 'Chennai, Tamil Nadu'}</td>
                     <td style={{ textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
                       <div style={{ display: 'inline-flex', gap: '8px' }}>
                         <button
@@ -394,6 +403,11 @@ export default function LeadTable({
                     <a href={`https://${selectedLead.facebookLink}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)' }}>fb.com/{selectedLead.facebookLink.split('/').pop()}</a>
                   ) : 'no link'}</span>
                 </div>
+              </div>
+
+              <div>
+                <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '6px' }}>Location</h4>
+                <p style={{ fontWeight: '600', fontSize: '0.95rem' }}>{selectedLead.location || 'Chennai, Tamil Nadu'}</p>
               </div>
 
               <div>
@@ -537,6 +551,18 @@ export default function LeadTable({
                 />
               </div>
 
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label">Business Location</label>
+                <input
+                  type="text"
+                  required
+                  value={newLead.location}
+                  onChange={(e) => setNewLead({ ...newLead, location: e.target.value })}
+                  placeholder="e.g. T. Nagar, Chennai"
+                  className="form-control"
+                />
+              </div>
+
               <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
                 <button type="button" onClick={() => setIsAddModalOpen(false)} className="btn btn-secondary" style={{ flexGrow: 1 }}>
                   Cancel
@@ -563,14 +589,14 @@ export default function LeadTable({
             <form onSubmit={handleImportSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
                 Paste comma-separated CSV rows below. Headers must match:<br />
-                <code>companyName,contactNumber,websiteStatus,websiteUrl,instagramLink,facebookLink,metaAdsStatus,instagramFollowers,businessType</code>
+                <code>companyName,contactNumber,websiteStatus,websiteUrl,instagramLink,facebookLink,metaAdsStatus,instagramFollowers,businessType,location</code>
               </p>
               <textarea
                 className="form-control"
                 rows={8}
                 value={importText}
                 onChange={(e) => setImportText(e.target.value)}
-                placeholder="HB Construction,WhatsApp: +91 984...,Active website,www.hbc.com,instagram.com/hbc,facebook.com/hbc,Active,2800 followers,Construction Company"
+                placeholder="HB Construction,WhatsApp: +91 984...,Active website,www.hbc.com,instagram.com/hbc,facebook.com/hbc,Active,2800 followers,Construction Company,Adyar Chennai"
                 required
                 style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
               />

@@ -116,7 +116,8 @@ export async function researchCompany(apiKey, query) {
     facebookLink: adsStatus === "No page no ads" ? "no page" : `facebook.com/${cleanQuery.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase()}`,
     metaAdsStatus: adsStatus,
     instagramFollowers: followers,
-    businessType: detectedType
+    businessType: detectedType,
+    location: "Chennai, Tamil Nadu"
   };
 
   if (!apiKey) {
@@ -125,21 +126,34 @@ export async function researchCompany(apiKey, query) {
     return localFallback;
   }
 
-  const prompt = `You are a professional digital marketing research assistant.
-Research the following business query by searching the web: "${query}"
+  // Construct a query focused specifically on Chennai / Tamil Nadu, India if it's a local business search
+  let localizedSearch = query;
+  if (!query.startsWith('@') && !lowerQuery.includes('chennai') && !lowerQuery.includes('tamil') && !lowerQuery.includes('india') && !lowerQuery.includes('coimbatore')) {
+    localizedSearch = `${query} Chennai Tamil Nadu India`;
+  }
 
-Use Google Search grounding to find real-world business details. Do NOT guess or make up URLs, social media links, or contact numbers. If a detail cannot be found in Google Search results, return "no page" or appropriate placeholder text.
+  const prompt = `You are a professional digital marketing research assistant.
+Research the following business: "${localizedSearch}"
+Target Location Context: Chennai / Tamil Nadu, India. Ensure all retrieved social links, phone numbers, and websites belong to the business in this region, not generic global names.
+
+Use Google Search grounding to find real-world business details. Do NOT guess, hallucinate, or make up URLs, social media links, or contact numbers.
+
+Verification Rules:
+1. Contact Number Consistency: Verify the phone numbers across their website, Instagram bio, and Facebook page. Ensure the number is correct and matches across all sources. If multiple numbers exist, format as "WhatsApp: [number] / Mobile: [number]".
+2. Logo & Branding Verification: Verify the profile logo on Facebook and Instagram matches the official business logo/branding. If they do not match, or it appears to be an unrelated page, write "no page".
+3. Business Location: Find the specific area, street, or neighborhood where the business operates in Chennai/Tamil Nadu (e.g. "T. Nagar, Chennai" or "Adyar, Chennai").
 
 Search criteria and definitions:
 1. Company Name: The official clean brand or business name (e.g. "HB Construction Chennai").
-2. WhatsApp and Mobile Number: Search for real, active contact numbers on their official website, Facebook, or Instagram page. Format as "WhatsApp: [number] / Mobile: [number]". If no contact number exists in search results, return "Not found".
-3. Website Status: Perform a real search. Must be precisely one of: "Active website", "Have website but inactive", or "No website". Define "Have website but inactive" if they have a registered domain name but the site has hosting errors, database connection errors, is under construction, down, or not opening.
+2. WhatsApp and Mobile Number: Extract active contact numbers. Format as "WhatsApp: [number] / Mobile: [number]".
+3. Website Status: Must be precisely one of: "Active website", "Have website but inactive", or "No website". Define "Have website but inactive" if they have a domain but the site is down, under construction, or showing hosting errors.
 4. Website URL: The exact, clean domain/URL if it exists (e.g., "hbconstruction.com").
-5. Business Instagram Link: Find the real Instagram profile link (e.g., "instagram.com/hbconstruction_chennai"). If none exists, write "no page".
-6. Business Facebook Page Link: Find the real Facebook page link (e.g., "facebook.com/hbconstructionchennai"). If none exists, write "no page".
-7. Meta Ads Status: Determine if they run ads on Meta Ads Library/Registry. Must be precisely one of: "Active" (if currently running ads), "Have page but inactive ads or no ads" (if Facebook/Instagram page exists but no ads are running), or "No page no ads".
+5. Business Instagram Link: Find the real Instagram profile link. If none exists, write "no page".
+6. Business Facebook Page Link: Find the real Facebook page link. Make sure the branding matches. If not, write "no page".
+7. Meta Ads Status: Determine if they run ads on Meta Ads Library. Must be precisely one of: "Active", "Have page but inactive ads or no ads", or "No page no ads".
 8. Instagram Followers: Retrieve or closely estimate their actual follower count (e.g., "2.8k followers").
 9. Business Type / Category: The type of business (e.g., "Construction Company").
+10. Business Location: The specific area/locality of the business in Chennai or Tamil Nadu (e.g., "Anna Nagar, Chennai").
 
 Return ONLY a valid JSON object matching this structure:
 {
@@ -151,7 +165,8 @@ Return ONLY a valid JSON object matching this structure:
   "facebookLink": "string",
   "metaAdsStatus": "Active" | "Have page but inactive ads or no ads" | "No page no ads",
   "instagramFollowers": "string",
-  "businessType": "string"
+  "businessType": "string",
+  "location": "string"
 }`;
 
   try {

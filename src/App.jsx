@@ -85,6 +85,7 @@ export default function App() {
         metaAdsStatus: 'Active',
         instagramFollowers: '2,850 followers',
         businessType: 'Construction Company',
+        location: 'Adyar, Chennai',
         createdAt: new Date(Date.now() - 3600000 * 24 * 3).toISOString()
       },
       {
@@ -98,6 +99,7 @@ export default function App() {
         metaAdsStatus: 'Have page but inactive ads or no ads',
         instagramFollowers: '24,500 followers',
         businessType: 'Bridal Shop & Boutique',
+        location: 'T. Nagar, Chennai',
         createdAt: new Date(Date.now() - 3600000 * 24).toISOString()
       },
       {
@@ -111,6 +113,7 @@ export default function App() {
         metaAdsStatus: 'Active',
         instagramFollowers: '8,900 followers',
         businessType: 'Architectural Firm',
+        location: 'Nungambakkam, Chennai',
         createdAt: new Date(Date.now() - 3600000 * 12).toISOString()
       },
       {
@@ -124,6 +127,7 @@ export default function App() {
         metaAdsStatus: 'Have page but inactive ads or no ads',
         instagramFollowers: '15,200 followers',
         businessType: 'Food & Restaurant',
+        location: 'Egmore, Chennai',
         createdAt: new Date(Date.now() - 3600000 * 2).toISOString()
       },
       {
@@ -137,6 +141,7 @@ export default function App() {
         metaAdsStatus: 'No page no ads',
         instagramFollowers: '950 followers',
         businessType: 'Interior Designer',
+        location: 'Velachery, Chennai',
         createdAt: new Date(Date.now() - 3600000 * 48).toISOString()
       }
     ];

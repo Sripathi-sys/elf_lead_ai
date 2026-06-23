@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, Search, Check, Database, AlertCircle, Globe, Phone, ShieldCheck, Megaphone, Instagram, Facebook } from 'lucide-react';
+import { Sparkles, Search, Check, Database, AlertCircle, Globe, Phone, ShieldCheck, Megaphone, Instagram, Facebook, MapPin } from 'lucide-react';
 import { researchCompany } from '../utils/gemini';
 
 export default function Prospector({ settings, onAddLead }) {
@@ -186,6 +186,14 @@ export default function Prospector({ settings, onAddLead }) {
                         <a href={`https://${result.facebookLink}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: '600' }}>fb.com/{result.facebookLink.split('/').pop()}</a>
                       )}
                     </p>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                  <MapPin size={18} style={{ color: 'var(--accent)', marginTop: '2px' }} />
+                  <div>
+                    <h4 style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-muted)' }}>Company Location</h4>
+                    <p style={{ fontSize: '0.95rem', fontWeight: '600' }}>{result.location || 'Chennai, Tamil Nadu'}</p>
                   </div>
                 </div>
 
