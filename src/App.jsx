@@ -17,7 +17,7 @@ export default function App() {
   
   // Default Settings Profile
   const [settings, setSettings] = useState({
-    apiKey: '',
+    apiKey: import.meta.env.VITE_GEMINI_API_KEY || '',
     senderName: 'Alex Rivera',
     senderTitle: 'Founder & CEO',
     companyName: 'GrowthSpace',
@@ -37,7 +37,11 @@ export default function App() {
 
     const savedSettings = localStorage.getItem('leads_ai_settings');
     if (savedSettings) {
-      setSettings(JSON.parse(savedSettings));
+      const parsed = JSON.parse(savedSettings);
+      if (!parsed.apiKey && import.meta.env.VITE_GEMINI_API_KEY) {
+        parsed.apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      }
+      setSettings(parsed);
     }
   }, []);
 

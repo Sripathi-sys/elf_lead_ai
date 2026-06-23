@@ -29,9 +29,14 @@ export default function Settings({ settings, onSaveSettings, onLoadDemoData, onC
       <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '24px' }}>
         <form onSubmit={handleSubmit} className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <div>
-            <h2 style={{ fontSize: '1.2rem', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <h2 style={{ fontSize: '1.2rem', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
               <Shield size={20} className="pulse" style={{ color: 'var(--accent-light)' }} />
               API Key Setup
+              {import.meta.env.VITE_GEMINI_API_KEY && (
+                <span className="badge badge-score-a" style={{ fontSize: '0.65rem', padding: '2px 8px', textTransform: 'none', fontWeight: 'bold' }}>
+                  ✓ Loaded from Vercel
+                </span>
+              )}
             </h2>
             <div className="form-group">
               <label className="form-label" htmlFor="apiKey">
@@ -44,14 +49,20 @@ export default function Settings({ settings, onSaveSettings, onLoadDemoData, onC
                   name="apiKey"
                   value={formData.apiKey}
                   onChange={handleChange}
-                  placeholder="AIzaSy..."
+                  placeholder={import.meta.env.VITE_GEMINI_API_KEY ? "••••••••••••••••••••" : "AIzaSy..."}
                   className="form-control"
                   style={{ paddingLeft: '44px' }}
                 />
                 <Key size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               </div>
               <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '8px' }}>
-                Your API key is saved locally in your browser's <code>localStorage</code> and never sent to any external server other than Google's Gemini API endpoints. If left blank, a simulated local AI model will respond.
+                {import.meta.env.VITE_GEMINI_API_KEY ? (
+                  <span style={{ color: 'var(--success)', fontWeight: '600' }}>
+                    ✓ Pre-configured via Vercel environment variables. You can enter a different key here to override it.
+                  </span>
+                ) : (
+                  "Your API key is saved locally in your browser's localStorage. If left blank, a simulated local AI model will respond."
+                )}
               </p>
             </div>
           </div>
