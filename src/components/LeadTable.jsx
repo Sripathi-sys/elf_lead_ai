@@ -355,80 +355,193 @@ export default function LeadTable({
 
       {/* Detail Sliding Drawer */}
       <div className={`drawer ${selectedLead ? 'open' : ''}`}>
-        {selectedLead && (
-          <>
-            <div className="drawer-header">
-              <h2 style={{ fontSize: '1.25rem', fontWeight: '800' }}>Company Details</h2>
-              <button
-                onClick={() => setSelectedLead(null)}
-                className="btn btn-secondary btn-icon"
-                style={{ borderRadius: '50%' }}
-              >
-                <X size={16} />
-              </button>
-            </div>
-            <div className="drawer-body" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '4px' }}>{selectedLead.companyName}</h3>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Type: <b>{selectedLead.businessType}</b></span>
-              </div>
-
-              <div>
-                <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '6px' }}>Contact Details</h4>
-                <p style={{ fontWeight: '600', fontSize: '0.95rem' }}>{selectedLead.contactNumber}</p>
-              </div>
-
-              <div>
-                <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '6px' }}>Website Audit</h4>
-                <span className={`badge ${selectedLead.websiteStatus === 'Active website' ? 'badge-web-active' : selectedLead.websiteStatus === 'No website' ? 'badge-web-none' : 'badge-web-inactive'}`} style={{ marginBottom: '8px' }}>
-                  {selectedLead.websiteStatus}
-                </span>
-                {selectedLead.websiteUrl && (
-                  <p style={{ fontSize: '0.9rem' }}>
-                    URL: <a href={`https://${selectedLead.websiteUrl}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
-                      {selectedLead.websiteUrl}
-                    </a>
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '6px' }}>Social Profiles</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.9rem' }}>
-                  <span><b>Instagram:</b> {selectedLead.instagramLink ? (
-                    <a href={`https://${selectedLead.instagramLink}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)' }}>@{selectedLead.instagramLink.split('/').pop()}</a>
-                  ) : 'no link'}</span>
-                  <span><b>Followers:</b> {selectedLead.instagramFollowers}</span>
-                  <span><b>Facebook:</b> {selectedLead.facebookLink === 'no page' ? 'no page' : selectedLead.facebookLink ? (
-                    <a href={`https://${selectedLead.facebookLink}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)' }}>fb.com/{selectedLead.facebookLink.split('/').pop()}</a>
-                  ) : 'no link'}</span>
-                </div>
-              </div>
-
-              <div>
-                <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '6px' }}>Location</h4>
-                <p style={{ fontWeight: '600', fontSize: '0.95rem' }}>{selectedLead.location || 'Chennai, Tamil Nadu'}</p>
-              </div>
-
-              <div>
-                <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '6px' }}>Meta Ads Library Status</h4>
-                <span className={`badge ${selectedLead.metaAdsStatus === 'Active' ? 'badge-ads-active' : selectedLead.metaAdsStatus === 'No page no ads' ? 'badge-web-none' : 'badge-ads-inactive'}`}>
-                  {selectedLead.metaAdsStatus === 'Active' ? 'Running Active Ads' : selectedLead.metaAdsStatus === 'No page no ads' ? 'No page no ads' : 'Inactive Ads / No Ads Running'}
-                </span>
-              </div>
-
-              <div style={{ marginTop: 'auto', paddingTop: '20px' }}>
+        {selectedLead && (() => {
+          const activeLead = leads.find(l => l.id === selectedLead.id) || selectedLead;
+          return (
+            <>
+              <div className="drawer-header">
+                <h2 style={{ fontSize: '1.25rem', fontWeight: '800' }}>Company Details</h2>
                 <button
                   onClick={() => setSelectedLead(null)}
-                  className="btn btn-secondary"
-                  style={{ width: '100%' }}
+                  className="btn btn-secondary btn-icon"
+                  style={{ borderRadius: '50%' }}
                 >
-                  Close Details
+                  <X size={16} />
                 </button>
               </div>
-            </div>
-          </>
-        )}
+              <div className="drawer-body" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                
+                <div className="form-group" style={{ marginBottom: '12px' }}>
+                  <label className="form-label">Company Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={activeLead.companyName || ''}
+                    onChange={(e) => onUpdateLeadField(activeLead.id, 'companyName', e.target.value)}
+                    placeholder="Company Name"
+                  />
+                </div>
+
+                <div className="form-group" style={{ marginBottom: '12px' }}>
+                  <label className="form-label">Business Type</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={activeLead.businessType || ''}
+                    onChange={(e) => onUpdateLeadField(activeLead.id, 'businessType', e.target.value)}
+                    placeholder="Business Type"
+                  />
+                </div>
+
+                <div className="form-group" style={{ marginBottom: '12px' }}>
+                  <label className="form-label">Contact Numbers</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={activeLead.contactNumber || ''}
+                    onChange={(e) => onUpdateLeadField(activeLead.id, 'contactNumber', e.target.value)}
+                    placeholder="Contact Numbers"
+                  />
+                </div>
+
+                <div style={{ borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
+                  <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '8px' }}>Website Audit</h4>
+                  
+                  <div className="form-group" style={{ marginBottom: '12px' }}>
+                    <label className="form-label">Website Status</label>
+                    <select
+                      className="form-control"
+                      value={activeLead.websiteStatus || 'Active website'}
+                      onChange={(e) => onUpdateLeadField(activeLead.id, 'websiteStatus', e.target.value)}
+                    >
+                      <option value="Active website">Active website</option>
+                      <option value="Have website but inactive">Have website but inactive</option>
+                      <option value="No website">No website</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: '12px' }}>
+                    <label className="form-label">Website URL</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={activeLead.websiteUrl || ''}
+                      onChange={(e) => onUpdateLeadField(activeLead.id, 'websiteUrl', e.target.value)}
+                      placeholder="e.g. www.example.com"
+                    />
+                    {activeLead.websiteUrl && (
+                      <p style={{ fontSize: '0.78rem', marginTop: '4px' }}>
+                        Open: <a href={`https://${activeLead.websiteUrl}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+                          {activeLead.websiteUrl}
+                        </a>
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div style={{ borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
+                  <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '8px' }}>Social Profiles</h4>
+                  
+                  <div className="form-group" style={{ marginBottom: '12px' }}>
+                    <label className="form-label">Instagram Link</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={activeLead.instagramLink || ''}
+                      onChange={(e) => onUpdateLeadField(activeLead.id, 'instagramLink', e.target.value)}
+                      placeholder="e.g. instagram.com/username"
+                    />
+                    {activeLead.instagramLink && (
+                      <p style={{ fontSize: '0.78rem', marginTop: '4px' }}>
+                        Open: <a href={`https://${activeLead.instagramLink}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+                          @{activeLead.instagramLink.split('/').pop()}
+                        </a>
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: '12px' }}>
+                    <label className="form-label">Instagram Followers</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={activeLead.instagramFollowers || ''}
+                      onChange={(e) => onUpdateLeadField(activeLead.id, 'instagramFollowers', e.target.value)}
+                      placeholder="e.g. 2,800 followers"
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: '12px' }}>
+                    <label className="form-label">Facebook Link</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={activeLead.facebookLink || ''}
+                      onChange={(e) => onUpdateLeadField(activeLead.id, 'facebookLink', e.target.value)}
+                      placeholder="e.g. facebook.com/pagename"
+                    />
+                    {activeLead.facebookLink && activeLead.facebookLink !== 'no page' && (
+                      <p style={{ fontSize: '0.78rem', marginTop: '4px' }}>
+                        Open: <a href={`https://${activeLead.facebookLink}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+                          fb.com/{activeLead.facebookLink.split('/').pop()}
+                        </a>
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div style={{ borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
+                  <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '8px' }}>Location & Ads</h4>
+
+                  <div className="form-group" style={{ marginBottom: '12px' }}>
+                    <label className="form-label">Location</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={activeLead.location || ''}
+                      onChange={(e) => onUpdateLeadField(activeLead.id, 'location', e.target.value)}
+                      placeholder="Location"
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: '12px' }}>
+                    <label className="form-label">Meta Ads Status</label>
+                    <select
+                      className="form-control"
+                      value={activeLead.metaAdsStatus || 'Active'}
+                      onChange={(e) => onUpdateLeadField(activeLead.id, 'metaAdsStatus', e.target.value)}
+                    >
+                      <option value="Active">Active</option>
+                      <option value="Have page but inactive ads or no ads">Have page but inactive ads or no ads</option>
+                      <option value="No page no ads">No page no ads</option>
+                    </select>
+                  </div>
+                </div>
+
+                {activeLead.stepByStepAnalysis && (
+                  <div style={{ borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
+                    <h4 style={{ fontSize: '0.85rem', fontWeight: '800', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                      AI Step-by-Step Logic Thinking Verification
+                    </h4>
+                    <p style={{ fontSize: '0.82rem', lineHeight: '1.5', color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', background: 'rgba(37,99,235,0.03)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                      {activeLead.stepByStepAnalysis}
+                    </p>
+                  </div>
+                )}
+
+                <div style={{ marginTop: 'auto', paddingTop: '20px' }}>
+                  <button
+                    onClick={() => setSelectedLead(null)}
+                    className="btn btn-secondary"
+                    style={{ width: '100%' }}
+                  >
+                    Close Details
+                  </button>
+                </div>
+              </div>
+            </>
+          );
+        })()}
       </div>
 
 
